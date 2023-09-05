@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant browser
+  participant server
+
+  XMLHttpRequest
+
+  browser->server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+  activate server
+  browser->server: the request formatted as JSON
+  deactivate server
+
+  Note: the default behavior of the form element is prevented and instead a JavaScript callback is attached.
+
+  Note: The browser executes the callback function that first adds the element to our DOM and
+  sends it to the server afterwards, resetting the contents of the input element as well as
+  rerendering the list of notes without reloading the page.
