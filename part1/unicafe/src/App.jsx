@@ -5,16 +5,19 @@ const Header = (props) => {
 }
 
 const Content = (props) => {
+  const content = props.parts.map(part => part.name + ' ' + part.exercises)
+
   return (
-    <p>
-      {props.part.name} {props.part.exercises}
-    </p>
+    <>
+      <p>{content[0]}</p>
+      <p>{content[1]}</p>
+      <p>{content[2]}</p>
+    </>
   )
       
 }
 const Total = (props) => {
-  // observation: `(acc, next) => { acc + next }` and `function(acc, next) { acc + next }`
-  // don't behave like expected here
+  // observation: adding curly braces to the lambda function body also requires us to add the return keyword
   const total = props.exercises.reduce((acc, next) => acc + next, 0)
 
   return (
@@ -23,27 +26,27 @@ const Total = (props) => {
 }
 const App = () => {
   const course = 'Half Stack application development'
-  const part1 = {
-    name: 'Fundamentals of React',
-    exercises: 10
-  }
-  const part2 = {
-    name: 'Using props to pass data',
-    exercises: 7
-  }
-  const part3 = {
-    name: 'State of a component',
-    exercises: 14
-  }
+  const parts = [
+    {
+      name: 'Fundamentals of React',
+      exercises: 10
+    },
+    {
+      name: 'Using props to pass data',
+      exercises: 7
+    },
+    {
+      name: 'State of a component',
+      exercises: 14
+    }
+  ]
 
-  const exercises = [part1, part2, part3].map(part => part.exercises);
+  const exercises = parts.map(part => part.exercises);
 
   return (
     <div>
       <Header course={course} />
-      <Content part={part1} />
-      <Content part={part2} />
-      <Content part={part3} />
+      <Content parts={parts} />
       <Total exercises={exercises} />
     </div>
   )
