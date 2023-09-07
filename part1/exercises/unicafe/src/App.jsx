@@ -4,33 +4,7 @@ const Header = ({ title }) => <h1>{title}</h1>
 
 const Button = ({ text, handleClick }) => <button onClick={handleClick}>{text}</button>
 
-const Statistics = ({ texts, feedbacks, average }) => {
-  const NoFeedback = feedbacks.reduce((acc, next) => acc && (next === 0), true)
-
-  // note: this solution is not idiomatic as clicking [good, bad, neutral] will trigger this condition
-  // if (average === 0) {
-  //     return <p>no statistics available yet!</p>
-  // } 
-
-  if (NoFeedback) {
-      return <p>no statistics available yet!</p>
-  } 
-
-  const zipped = feedbacks.map((feedback, i) => [texts[i], feedback])
-  const mapped = zipped.map(([text, feedback]) => <p>{text} {feedback}</p>)
-
-  const positive = feedbacks[0];
-  const totalFeedback = feedbacks.reduce((acc, next) => acc+=next, 0)
-
-  // it is generally disadvised to use array indices without describing their value
-  return (
-    <>
-      <div>{mapped}</div>
-      <p>average {average / totalFeedback}</p>
-      <p>positive {positive / totalFeedback} %</p>
-    </>
-  )
-}
+const StatisticLine = ({ text, value }) => <p>{text} {value}</p>
 
 const App = () => {
   // save clicks of each button to its own state
@@ -55,16 +29,33 @@ const App = () => {
     setAverage(average-1)
   }
 
+  const total = good + neutral + bad;
+  const positive = good / total * 100;
+
+
   return (
     <div>
-     <Header title='give feedback' />
+    <Header title='give feedback' />
 
-     <Button handleClick={handleGood} text='good' />
-     <Button handleClick={handleNeutral} text='neutral' />
-     <Button handleClick={handleBad} text='bad' />
+    <Button handleClick={handleGood} text='good' />
+    <Button handleClick={handleNeutral} text='neutral' />
+    <Button handleClick={handleBad} text='bad' />
 
-     <Header title='statistics' />
-     <Statistics texts={['good', 'neutral', 'bad']} feedbacks={[good, neutral, bad]} average={average} />
+    <Header title='statistics' />
+    {
+      total === 0 ? (
+        <p>no statistics available yet!</p>
+      ) : (
+        <div>
+          <StatisticLine text='good' value={good} />
+          <StatisticLine text='neutral' value={neutral} />
+          <StatisticLine text='bad' value={bad} />
+          <StatisticLine text='total' value={total} />
+          <StatisticLine text='average' value={average / total} />
+          <StatisticLine text='positive' value={positive + ' %'} />
+        </div>
+      )
+    }
     </div>
   )
 }
