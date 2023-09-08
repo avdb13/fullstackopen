@@ -4,7 +4,7 @@ const Header = ({ title }) => <h1>{title}</h1>
 
 const Button = ({ text, handleClick }) => <button onClick={handleClick}>{text}</button>
 
-const StatisticLine = ({ text, value }) => <p>{text} {value}</p>
+const StatisticLine = ({ text, value }) => <tr><td>{text}</td><td>{value}</td></tr>
 
 const App = () => {
   // save clicks of each button to its own state
@@ -46,14 +46,16 @@ const App = () => {
       total === 0 ? (
         <p>no statistics available yet!</p>
       ) : (
-        <div>
-          <StatisticLine text='good' value={good} />
-          <StatisticLine text='neutral' value={neutral} />
-          <StatisticLine text='bad' value={bad} />
-          <StatisticLine text='total' value={total} />
-          <StatisticLine text='average' value={average / total} />
-          <StatisticLine text='positive' value={positive + ' %'} />
-        </div>
+        <table>
+          <tbody>
+            <StatisticLine text='good' value={good} />
+            <StatisticLine text='neutral' value={neutral} />
+            <StatisticLine text='bad' value={bad} />
+            <StatisticLine text='total' value={total} />
+            <StatisticLine text='average' value={average / total} />
+            <StatisticLine text='positive' value={positive + ' %'} />
+          </tbody>
+        </table>
       )
     }
     </div>
