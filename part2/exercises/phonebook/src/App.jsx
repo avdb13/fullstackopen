@@ -1,5 +1,25 @@
 import { useState } from 'react'
 
+const Header = ({ title }) => <h2>{title}</h2>
+
+const Search = ({ handleFilter }) => <div>filter shown with <input onChange={handleFilter} /></div>
+
+const CreateContact = ({ name, number, handleName, handleNumber, addPerson }) => {
+    return (
+      <form onSubmit={addPerson}>
+        <div>
+          name: <input value={name} onChange={handleName} />
+        </div>
+        <div>
+          number: <input value={number} onChange={handleNumber} />
+        </div>
+        <div>
+          <button type="submit">add</button>
+        </div>
+      </form>
+    )
+}
+
 const App = () => {
   const [persons, setPersons] = useState([
     { name: 'Arto Hellas', number: '040-123456', id: 1 },
@@ -17,6 +37,7 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
+
     if (persons.find(person => person.name == newName)) {
       alert(`${newName} is already added to the phonebook`)
     } else {
@@ -34,23 +55,19 @@ const App = () => {
 
   return (
     <div>
-      <h2>Phonebook</h2>
-      <div>
-        filter shown with <input onChange={handleFilter} />
-      </div>
-      <h2>Add new contact</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={newName} onChange={handleName} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
+      <Header text='Phonebook' />
+      <Search handleFilter={handleFilter} />
+
+      <Header text='Add new contact' />
+      <CreateContact
+        name={newName}
+        number={newNumber}
+        handleName={handleName}
+        handleNumber={handleNumber}
+        addPerson={addPerson}
+      />
+
+      <Header text='Numbers' />
       <ul>
         {filtered.map(person => <li key={person.id}>{person.name} {person.number}</li>)}
       </ul>
