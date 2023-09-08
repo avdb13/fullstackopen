@@ -10,7 +10,13 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    setPersons([...persons, { name: newName }])
+    if (persons.find(person => person.name == newName)) {
+      alert(`${newName} is already added to the phonebook`)
+    } else {
+      setPersons([...persons, { name: newName }])
+    }
+    
+    // note: for ergonomics we also remove the name when it's a duplicate
     setNewName('')
   }
 
