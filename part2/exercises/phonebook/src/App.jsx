@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-
+import service from './components/numbers'
 
 const Filter = ({ handleFilter }) => <div>filter shown with <input onChange={handleFilter} /></div>
 
@@ -33,14 +33,14 @@ const Persons = ({ persons }) => {
 const Person = ({ name, number }) => <li>{name} {number}</li>
 
 const App = () => {
-  const [persons, setPersons] = useState([])
     
   useEffect(() => {
-    axios
-    .get('http://localhost:3000/persons')
-    .then((response) => setPersons(response.data))
+    service
+      .getAll()
+      .then((response) => setPersons(response.data))
   }, [])
 
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
@@ -55,12 +55,12 @@ const App = () => {
     if (persons.find(person => person.name == newName)) {
       alert(`${newName} is already added to the phonebook`)
     } else {
-      setPersons([...persons, { name: newName, number: newNumber, id: persons.length+1}])
+      const newPerson = { name: newName, number: newNumber }
+      service.create(newPerson).then(person => setPersons([...persons, person]))
+
+      setNewName('')
+      setNewNumber('')
     }
-    
-    // note: for ergonomics we also remove the name when it's a duplicate
-    setNewName('')
-    setNewNumber('')
   }
 
   const filtered = newFilter ? persons.filter(person =>
