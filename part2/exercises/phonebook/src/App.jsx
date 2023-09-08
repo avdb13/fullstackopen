@@ -20,27 +20,30 @@ const PersonForm = ({ name, number, handleName, handleNumber, addPerson }) => {
     )
 }
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, handleRemove }) => {
   return (
     <ul>
-      {persons.map(person =>
-        <Person name={person.name} number={person.number} key={person.id} />
-      )}
+      {persons.map(person => <Person person={person} handleRemove={handleRemove} key={person.id} />)}
     </ul>
   )
 }
 
-const Person = ({ name, number }) => <li>{name} {number}</li>
+const Person = ({ person, handleRemove }) => (
+  <li>
+    {person.name} {person.number} 
+    <button onClick={() => handleRemove(person.id)}>remove</button>
+  </li>
+)
 
 const App = () => {
+  const [persons, setPersons] = useState([])
     
   useEffect(() => {
     service
       .getAll()
-      .then((response) => setPersons(response.data))
+      .then((persons) => setPersons(persons))
   }, [])
 
-  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
@@ -52,14 +55,34 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
-    if (persons.find(person => person.name == newName)) {
-      alert(`${newName} is already added to the phonebook`)
+    const newPerson = { name: newName, number: newNumber }
+    const duplicatePerson = persons.find(person => person.name === newName)
+    const window = confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`)
+
+    if (duplicatePerson) {
+      if (window) {
+        service.update(newPerson, duplicatePerson.id).then(response => {
+          setPersons(persons.map(person => person.id === duplicatePerson.id ? response : person))
+        })
+      }
     } else {
-      const newPerson = { name: newName, number: newNumber }
       service.create(newPerson).then(person => setPersons([...persons, person]))
 
       setNewName('')
       setNewNumber('')
+    }
+  }
+
+  const removePerson = (id) => {
+    // note: 'dangerous' since find returns undefined instead of false on failure
+    const oldPerson = persons.find(person => person.id === id)
+
+    if (oldPerson) {
+      if (confirm(`Delete ${oldPerson.name}?`)) {
+        service.remove(id).then(() => setPersons(persons.filter(person => person.id !== oldPerson.id)))
+      }  
+    } else {
+      alert(`person with ID ${id} is already deleted`)
     }
   }
 
@@ -80,7 +103,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h2>Contacts</h2>
-      <Persons persons={filtered} />
+      <Persons persons={filtered} handleRemove={removePerson}/>
     </div>
   )
 }
