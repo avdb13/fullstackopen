@@ -67,10 +67,10 @@ const App = () => {
       }
     } else {
       service.create(newPerson).then(person => setPersons([...persons, person]))
-
-      setNewName('')
-      setNewNumber('')
     }
+
+    setNewName('')
+    setNewNumber('')
   }
 
   const removePerson = (id) => {
