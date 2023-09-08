@@ -1,10 +1,8 @@
 import { useState } from 'react'
 
-const Header = ({ title }) => <h2>{title}</h2>
+const Filter = ({ handleFilter }) => <div>filter shown with <input onChange={handleFilter} /></div>
 
-const Search = ({ handleFilter }) => <div>filter shown with <input onChange={handleFilter} /></div>
-
-const CreateContact = ({ name, number, handleName, handleNumber, addPerson }) => {
+const PersonForm = ({ name, number, handleName, handleNumber, addPerson }) => {
     return (
       <form onSubmit={addPerson}>
         <div>
@@ -19,6 +17,18 @@ const CreateContact = ({ name, number, handleName, handleNumber, addPerson }) =>
       </form>
     )
 }
+
+const Persons = ({ persons }) => {
+  return (
+    <ul>
+      {persons.map(person =>
+        <Person name={person.name} number={person.number} key={person.id} />
+      )}
+    </ul>
+  )
+}
+
+const Person = ({ name, number }) => <li>{name} {number}</li>
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -55,22 +65,18 @@ const App = () => {
 
   return (
     <div>
-      <Header text='Phonebook' />
-      <Search handleFilter={handleFilter} />
-
-      <Header text='Add new contact' />
-      <CreateContact
+      <h2>Phonebook</h2>
+      <Filter handleFilter={handleFilter} />
+      <h2>Add new contact</h2>
+      <PersonForm
         name={newName}
         number={newNumber}
         handleName={handleName}
         handleNumber={handleNumber}
         addPerson={addPerson}
       />
-
-      <Header text='Numbers' />
-      <ul>
-        {filtered.map(person => <li key={person.id}>{person.name} {person.number}</li>)}
-      </ul>
+      <h2>Contacts</h2>
+      <Persons persons={filtered} />
     </div>
   )
 }
