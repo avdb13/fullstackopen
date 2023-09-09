@@ -1,39 +1,12 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import service from './components/numbers'
+import service from './services/numbers'
+import PersonForm from './components/form'
+import Persons from './components/persons'
+import Notification from './components/notification'
+
 
 const Filter = ({ handleFilter }) => <div>filter shown with <input onChange={handleFilter} /></div>
-
-const PersonForm = ({ name, number, handleName, handleNumber, addPerson }) => {
-    return (
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input value={name} onChange={handleName} />
-        </div>
-        <div>
-          number: <input value={number} onChange={handleNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-    )
-}
-
-const Persons = ({ persons, handleRemove }) => {
-  return (
-    <ul>
-      {persons.map(person => <Person person={person} handleRemove={handleRemove} key={person.id} />)}
-    </ul>
-  )
-}
-
-const Person = ({ person, handleRemove }) => (
-  <li>
-    {person.name} {person.number} 
-    <button onClick={() => handleRemove(person.id)}>remove</button>
-  </li>
-)
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -47,6 +20,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [newNotification, setNewNotification] = useState(null)
 
   const handleName = (event) => setNewName(event.target.value)
   const handleNumber = (event) => setNewNumber(event.target.value)
@@ -56,18 +30,29 @@ const App = () => {
     event.preventDefault()
 
     const newPerson = { name: newName, number: newNumber }
+    console.log(persons.find(person => person.name === newName))
+
     const duplicatePerson = persons.find(person => person.name === newName)
-    const window = confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`)
 
     if (duplicatePerson) {
-      if (window) {
-        service.update(newPerson, duplicatePerson.id).then(response => {
-          setPersons(persons.map(person => person.id === duplicatePerson.id ? response : person))
+      if (confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`)) {
+        service
+          .update(newPerson, duplicatePerson.id)
+          .then(response => {
+            setPersons(persons.map(person => person.id === duplicatePerson.id ? response : person))
+        }).catch(err => {
+          setNewNotification({ message: `${newName} has already been removed from the server`, color: 'red' })
         })
+
+        setNewNotification({ message: `${newName} successfully updated`, color: 'green' })
       }
     } else {
       service.create(newPerson).then(person => setPersons([...persons, person]))
+
+      setNewNotification({ message: `${newName} successfully added`, color: 'green' })
     }
+
+    setTimeout(() => setNewNotification(null), 3000)
 
     setNewName('')
     setNewNumber('')
@@ -82,7 +67,8 @@ const App = () => {
         service.remove(id).then(() => setPersons(persons.filter(person => person.id !== oldPerson.id)))
       }  
     } else {
-      alert(`person with ID ${id} is already deleted`)
+      setNewNotification({ message: `person with ID ${id} is already deleted`, color: 'red' })
+      setTimeout(() => setNewNotification(null), 3000)
     }
   }
 
@@ -92,8 +78,12 @@ const App = () => {
 
   return (
     <div>
+      <Notification notification={newNotification} />
+      <br />
+
       <h2>Phonebook</h2>
       <Filter handleFilter={handleFilter} />
+
       <h2>Add new contact</h2>
       <PersonForm
         name={newName}
@@ -102,6 +92,7 @@ const App = () => {
         handleNumber={handleNumber}
         addPerson={addPerson}
       />
+
       <h2>Contacts</h2>
       <Persons persons={filtered} handleRemove={removePerson}/>
     </div>
