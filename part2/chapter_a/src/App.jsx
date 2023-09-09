@@ -1,4 +1,4 @@
-import Note from './Note'
+import Note from './components/Note'
 
 const App = ({ notes }) => {
   return (

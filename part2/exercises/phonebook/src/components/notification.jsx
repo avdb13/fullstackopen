@@ -1,6 +1,6 @@
 const Notification = ({ notification }) => {
-  if (notification === null) {
-    return
+  if (!notification) {
+    return null
   }
 
   const { message, color } = notification
