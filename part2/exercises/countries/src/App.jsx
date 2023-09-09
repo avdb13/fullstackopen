@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
-import service from './service/countries'
+import countryService from './services/countries'
+import weatherService from './services/weather'
 
-
-const Information = ({ country }) => {
-  if (!country) {
+const Information = ({ info }) => {
+  if (!info) {
     return null
   }
 
-  const { name, capital, area, languages, flag } = country
+  const { name, capital, area, languages, flag, coordinates } = info
 
   return (
     <>
       <div>
         <h1>{name} {flag}</h1>
-        <p>capital: {capital}</p>
+        <p>capital: {capital} {coordinates}</p>
         <p>area: {area}m2</p>
       </div>
       <div>
@@ -26,56 +26,76 @@ const Information = ({ country }) => {
   )
 }
 
-const List = ({ query, countries }) => {
-  const [country, setCountry] = useState(null)
-
+const List = ({ query, countries, setCountry }) => {
   if (!countries) {
     return null
   }
 
-  const filteredCountries =
-    countries.filter(name => name.startsWith(query.toLowerCase()))
+  const filteredCountries = countries.filter(name => name.startsWith(query.toLowerCase()))
 
-  if (filteredCountries.length === 1) {
-    service.getCountry(filteredCountries[0]).then(country => setCountry(country))
+  useEffect(() => {
+    if (filteredCountries.length === 1) {
+      setCountry(filteredCountries[0])
+    }
+  }, [filteredCountries])
 
-    return (
-      <Information country={country} />
-    )
-  } else if (filteredCountries.length > 10) {
+  if (filteredCountries.length > 10) {
     return (
       <p>Too many matches, specify another filter</p>
     )
+  } else {
+    return (
+      <ul>
+        {filteredCountries.map(country => (
+          <li key={country}>
+            {country}
+            <button onClick={() => setCountry(country)}>show</button>
+          </li>
+        ))}
+      </ul>
+    )
   }
 
-  return (
-    <ul>
-      {filteredCountries.map(country => <li key={country}>{country}</li>)}
-    </ul>
-  )
 }
 
 function App() {
   const [query, setQuery] = useState('')
   const [countries, setCountries] = useState(null)
+  const [country, setCountry] = useState(null)
+  const [info, setInfo] = useState(null)
 
   useEffect(() => {
-    service
+    countryService
       .getAll()
       .then(countries => {
         setCountries(countries)
       })
   }, [])
 
+  useEffect(() => {
+    if (!country) {
+      return
+    }
+
+    countryService
+      .getCountry(country)
+      .then(info => {
+        weatherService
+          .getCoordinates(info.capital).then(coordinates => {
+            setInfo({...info, coordinates})
+        })
+      })
+  }, [])
+
   const handleQuery = (event) => setQuery(event.target.value)
-  console.log(query)
 
   return (
     <div>
       <div>
         find countries <input value={query} onChange={handleQuery} />
       </div>
-      <List query={query} countries={countries} />
+      <List query={query} countries={countries} setCountry={setCountry} />
+      <Information info={info} />
     </div>
   )
 }
