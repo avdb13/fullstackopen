@@ -1,10 +1,15 @@
 const morgan = require("morgan");
 const express = require("express");
-
 const app = express();
 
+morgan.token("body", (req, res) => {
+  return JSON.stringify(req.body);
+});
+
 app.use(express.json());
-app.use(morgan("tiny"));
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms :body"),
+);
 
 let persons = [
   {
@@ -46,7 +51,6 @@ app.get("/api/persons/:id", (req, resp) => {
 
 app.post("/api/persons", (req, resp) => {
   const body = req.body;
-  console.log(body);
 
   if (!body.name) {
     return resp.status(400).json({ error: "body missing or malformed" });
