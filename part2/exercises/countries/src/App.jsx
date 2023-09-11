@@ -1,34 +1,38 @@
-import { useState, useEffect } from 'react'
-import countryService from './services/countries'
-import weatherService from './services/weather'
+import { useState, useEffect } from "react";
+import countryService from "./services/countries";
+import weatherService from "./services/weather";
 
 const SearchBar = ({ query, handleQuery }) => {
   return (
     <div>
       find countries <input value={query} onChange={handleQuery} />
     </div>
-  )
-}
+  );
+};
 
 const Information = ({ info }) => {
   if (!info) {
-    return null
+    return null;
   }
 
-  const { name, capital, area, languages, flag, weather } = info
-  const src = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`
+  const { name, capital, area, languages, flag, weather } = info;
+  const src = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
 
   return (
     <>
       <div>
-        <h1>{name} {flag}</h1>
+        <h1>
+          {name} {flag}
+        </h1>
         <p>capital: {capital}</p>
         <p>area: {area}m2</p>
       </div>
       <div>
         <h2>languages:</h2>
         <ul>
-          {languages.map(lang => <li key={lang}>{lang}</li>)}
+          {languages.map((lang) => (
+            <li key={lang}>{lang}</li>
+          ))}
         </ul>
       </div>
       <div>
@@ -38,74 +42,66 @@ const Information = ({ info }) => {
         <img src={src} alt="weather icon" />
       </div>
     </>
-  )
-}
+  );
+};
 
 const List = ({ countries, setCountry }) => {
   if (!countries) {
-    return null
+    return null;
   }
 
   if (countries.length > 10) {
-    return (
-      <p>Too many matches, specify another filter</p>
-    )
+    return <p>Too many matches, specify another filter</p>;
   } else {
     return (
       <ul>
-        {countries.map(country => (
+        {countries.map((country) => (
           <li key={country}>
             {country}
             <button onClick={() => setCountry(country)}>show</button>
           </li>
         ))}
       </ul>
-    )
+    );
   }
-
-}
+};
 
 function App() {
-  const [query, setQuery] = useState('')
-  const [countries, setCountries] = useState([])
-  const [country, setCountry] = useState(null)
-  const [info, setInfo] = useState(null)
+  const [query, setQuery] = useState("");
+  const [countries, setCountries] = useState([]);
+  const [country, setCountry] = useState(null);
+  const [info, setInfo] = useState(null);
 
-  const filteredCountries = countries.filter(name => name.startsWith(query.toLowerCase()))
-  const handleQuery = (event) => setQuery(event.target.value)
+  const filteredCountries = countries.filter((name) =>
+    name.startsWith(query.toLowerCase()),
+  );
+  const handleQuery = (event) => setQuery(event.target.value);
 
   useEffect(() => {
-    countryService
-      .getAll()
-      .then(countries => {
-        setCountries(countries)
-      })
-  }, [])
+    countryService.getAll().then((countries) => {
+      setCountries(countries);
+    });
+  }, []);
 
   useEffect(() => {
     if (!country) {
-      return
+      return;
     }
 
-    countryService
-      .getCountry(country)
-      .then(info => {
-        weatherService
-          .getWeather(info.capital)
-          .then(weather => {
-            const ok = {...info, weather}
-            console.log(ok)
-            setInfo(ok)
-          })
-      })
-  }, [country])
+    countryService.getCountry(country).then((info) => {
+      weatherService.getWeather(info.capital).then((weather) => {
+        const ok = { ...info, weather };
+        console.log(ok);
+        setInfo(ok);
+      });
+    });
+  }, [country]);
 
   useEffect(() => {
     if (filteredCountries.length === 1) {
-      setCountry(filteredCountries[0])
+      setCountry(filteredCountries[0]);
     }
-  }, [filteredCountries])
-
+  }, [filteredCountries]);
 
   return (
     <div>
@@ -113,7 +109,7 @@ function App() {
       <List countries={filteredCountries} setCountry={setCountry} />
       <Information info={info} />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
