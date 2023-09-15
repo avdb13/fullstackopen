@@ -61,6 +61,6 @@ describe("most blogs", () => {
 
   test("when list has only one blog, equals the author of that", () => {
     const result = listHelper.mostBlogs(listWithOneBlog);
-    expect(result).toBe({ author: "Michael Chan", blogs: 1 });
+    expect(result).toEqual({ author: "Michael Chan", blogs: 1 });
   });
 });

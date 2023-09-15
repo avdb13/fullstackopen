@@ -74,7 +74,7 @@ test("malformed body returns bad request", async () => {
   const resps = newBlogs.map((blog) =>
     api.post("/api/blogs").send(blog).expect(400),
   );
-  Promise.all(resps);
+  await Promise.all(resps);
 
   const blogsAtEnd = await blogsInDb();
   expect(blogsAtEnd).toHaveLength(initialBlogs.length);
@@ -82,4 +82,29 @@ test("malformed body returns bad request", async () => {
   const authors = blogsAtEnd.map((blog) => blog.author);
   expect(authors).not.toContain("Linus Torvalds");
   expect(authors).not.toContain("Richard Stallman");
+});
+
+test("a valid blog can be deleted", async () => {
+  const blogsAtStart = await blogsInDb();
+  const idx = Math.floor(Math.random() * blogsAtStart.length);
+  const blog = blogsAtStart[idx];
+
+  await api.delete(`/api/blogs/${blog.id}`).expect(204);
+
+  const blogsAtEnd = await blogsInDb();
+
+  expect(blogsAtEnd).not.toContain(blog);
+  expect(blogsAtEnd).toHaveLength(blogsAtStart.length - 1);
+});
+
+test("a valid blog can be updated", async () => {
+  const blogsAtStart = await blogsInDb();
+  let blog = blogsAtStart[0];
+
+  const updatedBlog = await api
+    .put(`/api/blogs/${blog.id}`)
+    .send({ ...blog, likes: blog.likes + 5 });
+
+  const blogsAtEnd = await blogsInDb();
+  expect(blogsAtEnd[0].likes).toEqual(blogsAtStart[0].likes + 5);
 });

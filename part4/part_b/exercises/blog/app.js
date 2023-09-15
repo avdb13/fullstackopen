@@ -1,5 +1,6 @@
 const config = require("./utils/config");
 const logger = require("./utils/logger");
+const middleware = require("./utils/middleware");
 const blogRouter = require("./controllers/blogs");
 
 const cors = require("cors");
@@ -17,8 +18,14 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan("tiny"));
+
+if (process.env.NODE_ENV != "test") {
+  app.use(middleware.requestLogger());
+}
 
 app.use(blogRouter);
+
+app.use(middleware.errorHandler);
+app.use(middleware.unknownEndpoint);
 
 module.exports = app;
