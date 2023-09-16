@@ -7,6 +7,7 @@ const middleware = require("./utils/middleware");
 
 const cors = require("cors");
 const express = require("express");
+const bodyParserErrorHandler = require("express-body-parser-error-handler");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const app = express();
@@ -21,6 +22,7 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParserErrorHandler());
 
 if (process.env.NODE_ENV != "test") {
   app.use(middleware.requestLogger());

@@ -4,7 +4,7 @@ const mongooseUniqueValidator = require("mongoose-unique-validator");
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
-    match: /[a-zA-Z0-9]{4,}/,
+    match: /[a-zA-Z0-9]{3,}/,
     required: true,
     unique: true,
   },
@@ -20,13 +20,13 @@ const userSchema = new mongoose.Schema({
 
 userSchema.plugin(mongooseUniqueValidator);
 
-userSchema.set("toJSON", () => {
+userSchema.set("toJSON", {
   transform: (document, retObject) => {
     retObject.id = retObject._id.toString();
     delete retObject._id;
     delete retObject.__v;
     delete retObject.passwordHash;
-  };
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

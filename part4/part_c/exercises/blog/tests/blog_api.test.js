@@ -108,3 +108,7 @@ test("a valid blog can be updated", async () => {
   const blogsAtEnd = await blogsInDb();
   expect(blogsAtEnd[0].likes).toEqual(blogsAtStart[0].likes + 5);
 });
+
+afterAll(async () => {
+  await mongoose.connection.close();
+});
