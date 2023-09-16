@@ -9,18 +9,10 @@ blogRouter.get("/", async (req, resp) => {
   resp.json(blogs);
 });
 
-const getTokenFrom = (req) => {
-  const auth = req.get("Authorization");
-  if (auth && auth.startsWith("Bearer ")) {
-    return auth.replace("Bearer ", "");
-  }
-  return null;
-};
-
 blogRouter.post("/", async (req, resp, next) => {
   const body = req.body;
 
-  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET);
+  const decodedToken = jwt.verify(req.token, process.env.SECRET);
   if (!decodedToken.id) {
     resp.status(401).json({ error: "invalid bearer token" });
   }
