@@ -17,6 +17,8 @@ const errorHandler = (err, req, resp, next) => {
     return resp.status(400).json({ error: "malformed id" });
   } else if (err.name === "ValidationError") {
     return resp.status(400).json({ error: err.message });
+  } else if (err.name === "JsonWebTokenError") {
+    return resp.status(400).json({ error: err.message });
   }
 
   next(err);
