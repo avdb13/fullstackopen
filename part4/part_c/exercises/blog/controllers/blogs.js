@@ -3,29 +3,26 @@ const jwt = require("jsonwebtoken");
 const blogRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
+const { userExtractor } = require("../utils/middleware");
 
 blogRouter.get("/", async (req, resp) => {
   const blogs = await Blog.find({}).populate("user", { username: 1, name: 1 });
+
   resp.json(blogs);
 });
 
-blogRouter.post("/", async (req, resp, next) => {
+blogRouter.post("/", userExtractor, async (req, resp, next) => {
   const body = req.body;
-
-  const decodedToken = jwt.verify(req.token, process.env.SECRET);
-  if (!decodedToken.id) {
-    resp.status(401).json({ error: "invalid bearer token" });
-  }
-
-  const user = await User.findById(decodedToken.id);
 
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes,
-    user: user.id,
+    user: req.user.toString(),
   });
+
+  const user = await User.findById(req.user);
 
   const savedBlog = await blog.save();
   user.blogs = [...user.blogs, savedBlog];
@@ -34,12 +31,18 @@ blogRouter.post("/", async (req, resp, next) => {
   resp.status(201).json(savedBlog);
 });
 
-blogRouter.put("/:id", async (req, resp, next) => {
+blogRouter.put("/:id", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
   const { likes } = req.body;
 
-  const updatedBlog = await Blog.findByIdAndUpdate(
-    id,
+  const blog = await Blog.findById(id);
+  if (blog.user !== req.user) {
+    return resp
+      .status(401)
+      .json({ error: "you can only update your own blogs" });
+  }
+
+  const updatedBlog = await blog.update(
     { likes },
     {
       runValidators: true,
@@ -51,10 +54,18 @@ blogRouter.put("/:id", async (req, resp, next) => {
   resp.json(updatedBlog);
 });
 
-blogRouter.delete("/:id", async (req, resp, next) => {
+blogRouter.delete("/:id", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
 
-  await Blog.findByIdAndRemove(id);
+  const blog = await Blog.findById(id);
+  if (blog.user !== req.user) {
+    return resp
+      .status(401)
+      .json({ error: "you can only delete your own blogs" });
+  }
+
+  await blog.remove();
+
   resp.status(204).end();
 });
 

@@ -22,8 +22,7 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
-app.use(middleware.tokenExtractor);
-app.use(bodyParserErrorHandler());
+// app.use(bodyParserErrorHandler());
 
 if (process.env.NODE_ENV != "test") {
   app.use(middleware.requestLogger());

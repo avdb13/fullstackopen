@@ -11,7 +11,6 @@ const Blog = require("../models/blog");
 
 beforeAll(async () => {
   await mongoose.connect(config.MONGODB_URI);
-  console.log("connected to MongoDB", mongoose.connection.readyState);
 });
 
 beforeEach(async () => {
