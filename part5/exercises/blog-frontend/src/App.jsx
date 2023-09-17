@@ -12,7 +12,9 @@ const Notification = ({ message }) => {
 }
 
 const App = () => {
+  const defaultBlog = {title: "", author: "", url: ""};
   const [blogs, setBlogs] = useState([])
+  const [newBlog, setNewBlog] = useState(defaultBlog)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [user, setUser] = useState(null)
@@ -25,7 +27,10 @@ const App = () => {
   useEffect(() => {
     const userJson = window.localStorage.getItem("blogUser");
     if (userJson) {
-      setUser(JSON.parse(userJson))
+      const user = JSON.parse(userJson)
+
+      setUser(user)
+      blogService.setToken(user.token)
     }
   }, [])
 
@@ -52,6 +57,22 @@ const App = () => {
     setUser(null)
   }
 
+  const addBlog = async (e) => {
+    e.preventDefault()
+
+    try {
+      await blogService.create(newBlog)
+      setBlogs([...blogs, newBlog])
+
+    } catch(e) {
+      console.log(e.response.data)
+      setErrorMessage(e.response.data)
+      setTimeout(() => setErrorMessage(null), 5000)
+    }
+
+    setNewBlog(defaultBlog)
+  }
+
   const blogList = () => {
     return (
       <ul>
@@ -76,6 +97,26 @@ const App = () => {
     )
   }
 
+  const blogForm = () => {
+    return (
+      <form onSubmit={addBlog}>
+        <div>
+          title:{" "}
+          <input type='title' value={newBlog.title} name='Title' onChange={(event) => setNewBlog({...newBlog, title: event.target.value})}/>
+        </div>
+        <div>
+          url:{" "}
+          <input type='url' value={newBlog.url} name='Url' onChange={(event) => setNewBlog({...newBlog, url: event.target.value})}/>
+        </div>
+        <div>
+          author:{" "}
+          <input type='author' value={newBlog.author} name='Author' onChange={(event) => setNewBlog({...newBlog, author: event.target.value})}/>
+        </div>
+        <button type='submit'>create</button>
+      </form>
+    )
+  }
+
   return (
     <div>
       <Notification message={errorMessage} />
@@ -83,6 +124,7 @@ const App = () => {
       {user ? 
           <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p> :
           null}
+      {user ? blogForm() : null}
       {user ? blogList() : loginForm()}
     </div>
   )
