@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import Togglable from './components/Togglable'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
 import './app.css'
 
 const Notification = ({ message }) => {
@@ -12,11 +15,7 @@ const Notification = ({ message }) => {
 }
 
 const App = () => {
-  const defaultBlog = {title: "", author: "", url: ""};
   const [blogs, setBlogs] = useState([])
-  const [newBlog, setNewBlog] = useState(defaultBlog)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
   const [user, setUser] = useState(null)
   const [message, setMessage] = useState(null)
 
@@ -34,31 +33,24 @@ const App = () => {
     }
   }, [])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  const blogFormRef = useRef()
 
+  const newLogin = async (credentials) => {
     try {
-      const user = await loginService.login({ username, password });
+      const user = await loginService.login(credentials);
 
       window.localStorage.setItem("blogUser", JSON.stringify(user));
 
       blogService.setToken(user.token)
       setUser(user)
-      setUsername("")
-      setPassword("")
     } catch(e) {
       setMessage({content: "wrong credentials", type: "error"})
       setTimeout(() => setMessage(null), 5000)
     }
   }
 
-  const handleLogout = async () => {
-    window.localStorage.removeItem("blogUser")
-    setUser(null)
-  }
-
-  const addBlog = async (e) => {
-    e.preventDefault()
+  const createBlog = async (newBlog) => {
+    blogFormRef.current.toggleVisibility()
 
     try {
       await blogService.create(newBlog)
@@ -70,8 +62,11 @@ const App = () => {
       setMessage({content: e.response.data, type: "error"})
       setTimeout(() => setMessage(null), 5000)
     }
+  }
 
-    setNewBlog(defaultBlog)
+  const handleLogout = async () => {
+    window.localStorage.removeItem("blogUser")
+    setUser(null)
   }
 
   const blogList = () => {
@@ -86,35 +81,17 @@ const App = () => {
 
   const loginForm = () => {
     return (
-      <form onSubmit={handleLogin}>
-        <div>
-          username <input type='text' value={username} name='Username' onChange={(event) => setUsername(event.target.value)}/>
-        </div>
-        <div>
-          password <input type='text' value={password} name='Password' onChange={(event) => setPassword(event.target.value)}/>
-        </div>
-        <button type='submit'>login</button>
-      </form>
+      <Togglable buttonLabel="show login form">
+        <LoginForm newLogin={newLogin} />
+      </Togglable>
     )
   }
 
   const blogForm = () => {
     return (
-      <form onSubmit={addBlog}>
-        <div>
-          title:{" "}
-          <input type='title' value={newBlog.title} name='Title' onChange={(event) => setNewBlog({...newBlog, title: event.target.value})}/>
-        </div>
-        <div>
-          url:{" "}
-          <input type='url' value={newBlog.url} name='Url' onChange={(event) => setNewBlog({...newBlog, url: event.target.value})}/>
-        </div>
-        <div>
-          author:{" "}
-          <input type='author' value={newBlog.author} name='Author' onChange={(event) => setNewBlog({...newBlog, author: event.target.value})}/>
-        </div>
-        <button type='submit'>create</button>
-      </form>
+      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
     )
   }
 
@@ -122,9 +99,13 @@ const App = () => {
     <div>
       <Notification message={message} />
       {user ? <h2>blogs</h2> : <h2>log in to application</h2>}
-      {user ? 
-          <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p> :
-          null}
+      {
+        user ? (
+          <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p>
+        ) : (
+          null
+        )
+      }
       {user ? blogForm() : null}
       {user ? blogList() : loginForm()}
     </div>

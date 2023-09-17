@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
-import Note from "./components/Note";
-import noteService from "./services/notes";
-import loginService from "./services/login";
+import { useEffect, useState, useRef, useReducer } from "react";
 import "./app.css";
+import Note from "./components/Note";
+import NoteForm from "./components/NoteForm";
+import LoginForm from "./components/LoginForm"
+import Togglable from "./components/Togglable"
+import loginService from "./services/login";
+import noteService from "./services/notes";
 
 const FilterButton = ({ handleClick, text }) => {
   return <button onClick={handleClick}>{text}</button>;
@@ -37,10 +40,7 @@ const App = () => {
   const { getAll, update, create } = noteService;
 
   const [notes, setNotes] = useState([]);
-  const [newNote, setNewNote] = useState("a new note ...");
   const [showAll, setShowAll] = useState(true);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [user, setUser] = useState(null);
 
@@ -51,12 +51,14 @@ const App = () => {
   useEffect(() => {
     const userJson = window.localStorage.getItem("NoteAppUser");
     if (userJson) {
-      const user = JSON.parse(userJson)
+      const user = JSON.parse(userJson);
 
-      setUser(user)
-      noteService.setToken(user.token)
+      setUser(user);
+      noteService.setToken(user.token);
     }
-  }, [user]);
+  }, []);
+
+  const noteFormRef = useRef()
 
   const toggleImportance = (id) => {
     // note: indexing into the array directly is more idiomatic than comparing IDs
@@ -77,14 +79,8 @@ const App = () => {
       });
   };
 
-  const addNote = (event) => {
-    event.preventDefault();
-
-    const note = {
-      important: Math.random() < 0.5,
-      content: newNote,
-    };
-
+  const createNote = (note) => {
+    noteFormRef.current.toggleVisibility()
     create(note)
       .then((note) => setNotes([...notes, note]))
       .catch((error) => {
@@ -94,22 +90,16 @@ const App = () => {
           setErrorMessage(null);
         }, 5000);
       });
+  }
 
-    setNewNote("");
-  };
-
-  const handleNoteChange = (event) => setNewNote(event.target.value);
   const handleClick = () => setShowAll(!showAll);
-  const handleLogin = async (event) => {
-    event.preventDefault();
-
+  const newLogin = async (credentials) => {
     try {
-     const user = await loginService.login({ username, password });
+      const user = await loginService.login(credentials);
 
-      noteService.setToken(user.token)
       setUser(user);
-      setUsername("");
-      setPassword("");
+      noteService.setToken(user.token);
+      window.localStorage.setItem("NoteAppUser", JSON.stringify(user));
     } catch (e) {
       setErrorMessage("wrong credentials");
 
@@ -117,53 +107,47 @@ const App = () => {
         setErrorMessage(null);
       }, 5000);
     }
-  };
+  }
 
   const notesToShow = showAll ? notes : notes.filter((note) => note.important);
 
-  const notesForm = () => {
+  const loginForm = () => {
     return (
-      <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange} />
-        <button type="submit">save</button>
-      </form>
-    );
+      <Togglable buttonLabel="login">
+        <LoginForm
+          newLogin={newLogin}
+        />
+      </Togglable>
+    )
   }
 
-  const LoginForm = () => {
+  const noteForm = () => {
     return (
-      <form onSubmit={handleLogin}>
-        <div>
-          username{" "}
-          <input
-            type="text"
-            value={username}
-            name="Username"
-            onChange={(event) => setUsername(event.target.value)}
-          />
-        </div>
-        <div>
-          password{" "}
-          <input
-            type="text"
-            value={password}
-            name="Password"
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </div>
-        <button type="submit">login</button>
-      </form>
-    );
+      <Togglable
+        ref={noteFormRef}
+        buttonLabel="new note"
+      >
+        <NoteForm
+          createNote={createNote}
+        />
+      </Togglable>
+    )
   }
 
   return (
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
-      {user &&
-          <p>{user.name} logged in <button onClick={() => window.localStorage.removeItem("NoteAppUser")}>Logout</button></p>
+      {
+        user ? (
+          <div>
+            <p>{user.username} logged in{" "}</p>
+            {noteForm()}
+          </div>
+        ) : (
+          loginForm()
+        )
       }
-      {user ? notesForm() : LoginForm()}
       <ul>
         {notesToShow.map((note) => {
           return (
@@ -175,7 +159,6 @@ const App = () => {
           );
         })}
       </ul>
-
       <FilterButton
         handleClick={handleClick}
         text={showAll ? "show only important" : "show all"}

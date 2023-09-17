@@ -1,7 +1,7 @@
 const Blog = ({ blog }) => (
   <li key={blog.id}>
-    {blog.title} {blog.author}
-  </li>  
+    <a href={blog.url}>{blog.title}</a> by {blog.author}
+  </li>
 )
 
 export default Blog
