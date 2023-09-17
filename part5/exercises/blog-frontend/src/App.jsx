@@ -8,7 +8,7 @@ const Notification = ({ message }) => {
   if (message === null) {
     return null
   }
-  return <div className='error'>{message}</div>
+  return <div className={message.type}>{message.content}</div>
 }
 
 const App = () => {
@@ -18,7 +18,7 @@ const App = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [message, setMessage] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then(resp => setBlogs(resp))
@@ -47,8 +47,8 @@ const App = () => {
       setUsername("")
       setPassword("")
     } catch(e) {
-      setErrorMessage("wrong credentials")
-      setTimeout(() => setErrorMessage(null), 5000)
+      setMessage({content: "wrong credentials", type: "error"})
+      setTimeout(() => setMessage(null), 5000)
     }
   }
 
@@ -64,10 +64,11 @@ const App = () => {
       await blogService.create(newBlog)
       setBlogs([...blogs, newBlog])
 
+      setMessage({content: `${newBlog.title} by ${newBlog.author} was added`, type: "message"})
+      setTimeout(() => setMessage(null), 5000)
     } catch(e) {
-      console.log(e.response.data)
-      setErrorMessage(e.response.data)
-      setTimeout(() => setErrorMessage(null), 5000)
+      setMessage({content: e.response.data, type: "error"})
+      setTimeout(() => setMessage(null), 5000)
     }
 
     setNewBlog(defaultBlog)
@@ -119,7 +120,7 @@ const App = () => {
 
   return (
     <div>
-      <Notification message={errorMessage} />
+      <Notification message={message} />
       {user ? <h2>blogs</h2> : <h2>log in to application</h2>}
       {user ? 
           <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p> :
