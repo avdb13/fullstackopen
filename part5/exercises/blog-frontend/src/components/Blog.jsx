@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState } from 'react'
 
 const Blog = ({ blog, removeBlog, addLike }) => {
   const blogStyle = {
@@ -22,7 +22,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
   const compactView = () => (
     <li key={blog.id} style={blogStyle}>
       <p>
-        <a href={blog.url}>{blog.title}</a> by {blog.author}{" "}
+        <a href={blog.url}>{blog.title}</a> by {blog.author}{' '}
         <button onClick={() => setShowAll(true)}>view</button>
       </p>
     </li>
@@ -37,7 +37,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
       <div>
         <p>{blog.url}</p>
         <p>
-          {blog.likes ? blog.likes : 0} likes{" "}
+          {blog.likes ? blog.likes : 0} likes{' '}
           <button onClick={() => addLike(blog)}>like</button>
         </p>
         <p>added by {blog.user.name}</p>

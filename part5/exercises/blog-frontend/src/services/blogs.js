@@ -1,7 +1,7 @@
 import axios from 'axios'
 const baseUrl = 'http://localhost:3000/api/blogs'
 
-let token = null;
+let token = null
 
 const setToken = (newToken) => {
   token = `Bearer ${newToken}`
@@ -22,7 +22,7 @@ const create = async (blog) => {
 }
 
 const update = async (blog) => {
-  blog = {...blog, likes: blog.likes + 1}
+  blog = { ...blog, likes: blog.likes + 1 }
 
   // not very idiomatic but it works ig
   const user = blog.user
@@ -36,7 +36,7 @@ const update = async (blog) => {
   }
 
   const resp = await axios.put(`${baseUrl}/${id}`, blog, config)
-  return {...resp.data, user, id}
+  return { ...resp.data, user, id }
 }
 
 const remove = async (id) => {

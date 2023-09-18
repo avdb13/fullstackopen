@@ -24,7 +24,7 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-    const userJson = window.localStorage.getItem("blogUser");
+    const userJson = window.localStorage.getItem('blogUser')
     if (userJson) {
       const user = JSON.parse(userJson)
 
@@ -37,14 +37,14 @@ const App = () => {
 
   const newLogin = async (credentials) => {
     try {
-      const user = await loginService.login(credentials);
+      const user = await loginService.login(credentials)
 
-      window.localStorage.setItem("blogUser", JSON.stringify(user));
+      window.localStorage.setItem('blogUser', JSON.stringify(user))
 
       blogService.setToken(user.token)
       setUser(user)
     } catch(e) {
-      setMessage({content: "wrong credentials", type: "error"})
+      setMessage({ content: 'wrong credentials', type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
   }
@@ -56,10 +56,10 @@ const App = () => {
       await blogService.create(newBlog)
       setBlogs([...blogs, newBlog])
 
-      setMessage({content: `${newBlog.title} by ${newBlog.author} was added`, type: "message"})
+      setMessage({ content: `${newBlog.title} by ${newBlog.author} was added`, type: 'message' })
       setTimeout(() => setMessage(null), 5000)
     } catch(e) {
-      setMessage({content: e.response.data, type: "error"})
+      setMessage({ content: e.response.data, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
   }
@@ -69,7 +69,7 @@ const App = () => {
       await blogService.remove(id)
       setBlogs(blogs.filter(blog => blog.id !== id))
     } catch(e) {
-      setMessage({content: e.response.data, type: "error"})
+      setMessage({ content: e.response.data, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
   }
@@ -79,16 +79,16 @@ const App = () => {
       const newBlog = await blogService.update(blog)
       setBlogs(blogs.map(blog => blog.id === newBlog.id ? newBlog : blog))
 
-      setMessage({content: `you liked ${newBlog.title}`, type: "message"})
+      setMessage({ content: `you liked ${newBlog.title}`, type: 'message' })
       setTimeout(() => setMessage(null), 5000)
     } catch(e) {
-      setMessage({content: e.response.data, type: "error"})
+      setMessage({ content: e.response.data, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
   }
 
   const handleLogout = async () => {
-    window.localStorage.removeItem("blogUser")
+    window.localStorage.removeItem('blogUser')
     setUser(null)
   }
 
