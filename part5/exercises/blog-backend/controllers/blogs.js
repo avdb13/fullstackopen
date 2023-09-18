@@ -11,6 +11,13 @@ blogRouter.get("/", async (req, resp) => {
   resp.json(blogs);
 });
 
+blogRouter.get("/:id", async (req, resp) => {
+  const id = req.params.id
+  const blog = await Blog.findById(id).populate("user", { username: 1, name: 1 });
+
+  resp.json(blog);
+});
+
 blogRouter.post("/", userExtractor, async (req, resp, next) => {
   const body = req.body;
 
@@ -31,18 +38,12 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
   resp.status(201).json(savedBlog);
 });
 
-blogRouter.put("/:id", userExtractor, async (req, resp, next) => {
+blogRouter.put("/:id", async (req, resp, next) => {
   const id = req.params.id;
   const { likes } = req.body;
 
-  const blog = await Blog.findById(id);
-  if (blog.user !== req.user) {
-    return resp
-      .status(401)
-      .json({ error: "you can only update your own blogs" });
-  }
-
-  const updatedBlog = await blog.update(
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    id,
     { likes },
     {
       runValidators: true,
@@ -57,14 +58,12 @@ blogRouter.put("/:id", userExtractor, async (req, resp, next) => {
 blogRouter.delete("/:id", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
 
-  const blog = await Blog.findById(id);
-  if (blog.user !== req.user) {
-    return resp
-      .status(401)
-      .json({ error: "you can only delete your own blogs" });
-  }
-
-  await blog.remove();
+  await Blog.findOneAndRemove(id);
+  // if (blog.user !== req.user) {
+  //   return resp
+  //     .status(401)
+  //     .json({ error: "you can only delete your own blogs" });
+  // }
 
   resp.status(204).end();
 });

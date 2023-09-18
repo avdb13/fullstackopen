@@ -64,6 +64,29 @@ const App = () => {
     }
   }
 
+  const removeBlog = async (id) => {
+    try {
+      await blogService.remove(id)
+      setBlogs(blogs.filter(blog => blog.id !== id))
+    } catch(e) {
+      setMessage({content: e.response.data, type: "error"})
+      setTimeout(() => setMessage(null), 5000)
+    }
+  }
+
+  const addLike = async (blog) => {
+    try {
+      const newBlog = await blogService.update(blog)
+      setBlogs(blogs.map(blog => blog.id === newBlog.id ? newBlog : blog))
+
+      setMessage({content: `you liked ${newBlog.title}`, type: "message"})
+      setTimeout(() => setMessage(null), 5000)
+    } catch(e) {
+      setMessage({content: e.response.data, type: "error"})
+      setTimeout(() => setMessage(null), 5000)
+    }
+  }
+
   const handleLogout = async () => {
     window.localStorage.removeItem("blogUser")
     setUser(null)
@@ -72,8 +95,8 @@ const App = () => {
   const blogList = () => {
     return (
       <ul>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+        {blogs.sort((a,b) => b.likes-a.likes).map(blog =>
+          <Blog removeBlog={removeBlog} key={blog.id} blog={blog} addLike={addLike} />
         )}
       </ul>
     )
