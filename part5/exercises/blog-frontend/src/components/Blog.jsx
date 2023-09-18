@@ -23,7 +23,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
     <li key={blog.id} style={blogStyle}>
       <p>
         <a href={blog.url}>{blog.title}</a> by {blog.author}{' '}
-        <button onClick={() => setShowAll(true)}>view</button>
+        <button onClick={() => setShowAll(true)}>show</button>
       </p>
     </li>
   )
