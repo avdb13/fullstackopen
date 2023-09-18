@@ -13,20 +13,44 @@ const BlogForm = ({ createBlog }) => {
   }
 
   return (
-    <form onSubmit={handleCreateBlog}>
+    <form onSubmit={handleCreateBlog} className="form">
       <div>
         title:{' '}
-        <input type='title' value={newBlog.title} name='Title' onChange={(event) => setNewBlog({ ...newBlog, title: event.target.value })}/>
+        <input
+          type="title"
+          placeholder="title"
+          value={newBlog.title}
+          name="Title"
+          onChange={(event) =>
+            setNewBlog({ ...newBlog, title: event.target.value })
+          }
+        />
       </div>
       <div>
         url:{' '}
-        <input type='url' value={newBlog.url} name='Url' onChange={(event) => setNewBlog({ ...newBlog, url: event.target.value })}/>
+        <input
+          type="url"
+          placeholder="url"
+          value={newBlog.url}
+          name="Url"
+          onChange={(event) =>
+            setNewBlog({ ...newBlog, url: event.target.value })
+          }
+        />
       </div>
       <div>
         author:{' '}
-        <input type='author' value={newBlog.author} name='Author' onChange={(event) => setNewBlog({ ...newBlog, author: event.target.value })}/>
+        <input
+          type="author"
+          placeholder="author"
+          value={newBlog.author}
+          name="Author"
+          onChange={(event) =>
+            setNewBlog({ ...newBlog, author: event.target.value })
+          }
+        />
       </div>
-      <button type='submit'>create</button>
+      <button type="submit">create</button>
     </form>
   )
 }

@@ -42,7 +42,7 @@ describe('<Blog /> : displaying information', () => {
   })
 })
 
-describe('<Blog /> : calling even handlers', () => {
+describe('<Blog /> : calling event handlers', () => {
   let container
   let mockHandler
 

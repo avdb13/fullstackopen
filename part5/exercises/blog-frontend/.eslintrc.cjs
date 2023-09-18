@@ -14,6 +14,7 @@ module.exports = {
   plugins: ['react-refresh', 'jest'],
   rules: {
     "indent": ["error", 2],
+    "max-len": ["error", {"code": 80}],
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "single"],
     "semi": ["error", "never"],
