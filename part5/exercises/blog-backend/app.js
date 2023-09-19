@@ -25,9 +25,7 @@ app.use(cors());
 app.use(express.json());
 // app.use(bodyParserErrorHandler());
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(middleware.requestLogger());
-}
+app.use(middleware.requestLogger());
 
 app.use("/api/blogs", blogRouter);
 app.use("/api/login", loginRouter);
