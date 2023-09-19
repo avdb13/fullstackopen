@@ -22,7 +22,7 @@ const create = async (blog) => {
 }
 
 const update = async (blog) => {
-  blog = { ...blog, likes: blog.likes + 1 }
+  blog = { ...blog, likes: (blog.likes || 0) + 1 }
 
   // not very idiomatic but it works ig
   const user = blog.user
@@ -44,7 +44,7 @@ const remove = async (id) => {
     headers: { Authorization: token }
   }
 
-  await axios.delete(`${baseUrl}/${id}`, config)
+  const resp = await axios.delete(`${baseUrl}/${id}`, config)
 }
 
 export default { getAll, create, setToken, update, remove }

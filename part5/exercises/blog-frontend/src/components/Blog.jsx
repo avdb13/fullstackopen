@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const Blog = ({ blog, removeBlog, addLike }) => {
+const Blog = ({ blog, username, removeBlog, addLike }) => {
   const blogStyle = {
     listStyle: 'none',
     paddingTop: 10,
@@ -8,7 +8,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
     border: 'solid',
     borderWidth: 2,
     borderRadius: 5,
-    marginBottom: 5
+    marginBottom: 5,
   }
 
   const [showAll, setShowAll] = useState(false)
@@ -38,17 +38,19 @@ const Blog = ({ blog, removeBlog, addLike }) => {
         <p>{blog.url}</p>
         <p>
           {blog.likes ? blog.likes : 0} likes{' '}
-          <button onClick={() => addLike(blog)}>like</button>
+          <button id="like-button" onClick={() => addLike(blog)}>
+            like
+          </button>
         </p>
         <p>added by {blog.user.name}</p>
-        <button onClick={() => handleRemove(blog)}>remove</button>
+        {username === blog.user.username ? (
+          <button onClick={() => handleRemove(blog)}>remove</button>
+        ) : null}
       </div>
     </li>
   )
 
-  return (
-    showAll ? fullView() : compactView()
-  )
+  return showAll ? fullView() : compactView()
 }
 
 export default Blog

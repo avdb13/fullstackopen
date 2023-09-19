@@ -20,7 +20,7 @@ const App = () => {
   const [message, setMessage] = useState(null)
 
   useEffect(() => {
-    blogService.getAll().then(resp => setBlogs(resp))
+    blogService.getAll().then((resp) => setBlogs(resp))
   }, [])
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const App = () => {
 
       blogService.setToken(user.token)
       setUser(user)
-    } catch(e) {
+    } catch (e) {
       setMessage({ content: 'wrong credentials', type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
@@ -56,9 +56,12 @@ const App = () => {
       await blogService.create(newBlog)
       setBlogs([...blogs, newBlog])
 
-      setMessage({ content: `${newBlog.title} by ${newBlog.author} was added`, type: 'message' })
+      setMessage({
+        content: `${newBlog.title} by ${newBlog.author} was added`,
+        type: 'message',
+      })
       setTimeout(() => setMessage(null), 5000)
-    } catch(e) {
+    } catch (e) {
       setMessage({ content: e.response.data, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
@@ -67,9 +70,10 @@ const App = () => {
   const removeBlog = async (id) => {
     try {
       await blogService.remove(id)
-      setBlogs(blogs.filter(blog => blog.id !== id))
-    } catch(e) {
-      setMessage({ content: e.response.data, type: 'error' })
+      setBlogs(blogs.filter((blog) => blog.id !== id))
+    } catch (e) {
+      const { error } = e.response.data
+      setMessage({ content: error, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
   }
@@ -77,11 +81,11 @@ const App = () => {
   const addLike = async (blog) => {
     try {
       const newBlog = await blogService.update(blog)
-      setBlogs(blogs.map(blog => blog.id === newBlog.id ? newBlog : blog))
+      setBlogs(blogs.map((blog) => (blog.id === newBlog.id ? newBlog : blog)))
 
       setMessage({ content: `you liked ${newBlog.title}`, type: 'message' })
       setTimeout(() => setMessage(null), 5000)
-    } catch(e) {
+    } catch (e) {
       setMessage({ content: e.response.data, type: 'error' })
       setTimeout(() => setMessage(null), 5000)
     }
@@ -95,9 +99,17 @@ const App = () => {
   const blogList = () => {
     return (
       <ul>
-        {blogs.sort((a,b) => b.likes-a.likes).map(blog =>
-          <Blog removeBlog={removeBlog} key={blog.id} blog={blog} addLike={addLike} />
-        )}
+        {blogs
+          .sort((a, b) => b.likes - a.likes)
+          .map((blog) => (
+            <Blog
+              removeBlog={removeBlog}
+              key={blog.id}
+              blog={blog}
+              username={user.username}
+              addLike={addLike}
+            />
+          ))}
       </ul>
     )
   }
@@ -122,13 +134,11 @@ const App = () => {
     <div>
       <Notification message={message} />
       {user ? <h2>blogs</h2> : <h2>log in to application</h2>}
-      {
-        user ? (
-          <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p>
-        ) : (
-          null
-        )
-      }
+      {user ? (
+        <p>
+          {user.name} logged in <button onClick={handleLogout}>logout</button>
+        </p>
+      ) : null}
       {user ? blogForm() : null}
       {user ? blogList() : loginForm()}
     </div>

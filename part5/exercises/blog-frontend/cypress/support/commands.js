@@ -30,10 +30,13 @@ Cypress.Commands.add('login', (credentials) => {
     url: 'http://localhost:3000/api/login',
     body: credentials,
   }).then(({ body }) => {
-    localStorage.setItem('BlogAppUser', JSON.stringify(body))
+    localStorage.setItem('blogUser', JSON.stringify(body))
     cy.visit('http://localhost:5173')
   })
+})
 
+Cypress.Commands.add('logout', () => {
+  localStorage.removeItem('blogUser')
 })
 
 Cypress.Commands.add('createBlog', (blog) => {
@@ -42,7 +45,7 @@ Cypress.Commands.add('createBlog', (blog) => {
     url: 'http://localhost:3000/api/blogs',
     body: blog,
     auth: {
-      bearer: localStorage.getItem('BlogAppUser').token
+      bearer: JSON.parse(localStorage.getItem('blogUser')).token
     }
   }).then(() => {
     cy.visit('http://localhost:5173')
