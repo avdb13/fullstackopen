@@ -5,7 +5,8 @@ const notificationSlice = createSlice({
   initialState: '',
   reducers: {
     newNotification(state, action) {
-      state = action.payload
+      setTimeout(() => state = '', 3000)
+      return action.payload
     }
   }
 })
