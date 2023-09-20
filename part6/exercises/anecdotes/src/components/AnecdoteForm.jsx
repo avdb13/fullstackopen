@@ -3,6 +3,7 @@ import { createAnecdote } from '../reducers/anecdoteReducer'
 
 const AnecdoteForm = () => {
   const dispatch = useDispatch()
+
   const addAnecdote = (event) => {
     event.preventDefault()
 
