@@ -3,11 +3,12 @@ import { addVote } from '../reducers/anecdoteReducer'
 import { newNotification } from '../reducers/notificationReducer'
 
 const Anecdotes = () => {
-  const anecdotes = useSelector(({ anecdotes, filter }) =>
-    anecdotes.filter((anecdote) =>
-      anecdote.content.toLowerCase().startsWith(filter),
-    ),
-  )
+  const anecdotes = useSelector((state) => {
+    console.log(JSON.parse(JSON.stringify(state)).anecdotes)
+    return state.anecdotes.filter((anecdote) =>
+      anecdote.content.toLowerCase().startsWith(state.filter)
+    )
+  })
 
   return (
     <ul>
