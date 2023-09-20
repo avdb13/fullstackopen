@@ -2,7 +2,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addVote } from '../reducers/anecdoteReducer'
 
 const Anecdotes = () => {
-  const anecdotes = useSelector((state) => state)
+  const anecdotes = useSelector(({ anecdotes, filter }) =>
+    anecdotes.filter(anecdote => anecdote.content.toLowerCase().startsWith(filter)))
 
   return (
     <ul>
