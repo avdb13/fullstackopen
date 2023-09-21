@@ -36,13 +36,15 @@ blogRouter.put("/:id", userExtractor, async (req, resp, next) => {
   const { likes } = req.body;
 
   const blog = await Blog.findById(id);
-  if (blog.user !== req.user) {
+
+  if (blog.user.toString() !== req.user) {
     return resp
       .status(401)
       .json({ error: "you can only update your own blogs" });
   }
 
-  const updatedBlog = await blog.update(
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    id,
     { likes },
     {
       runValidators: true,
@@ -58,13 +60,14 @@ blogRouter.delete("/:id", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
 
   const blog = await Blog.findById(id);
-  if (blog.user !== req.user) {
+
+  if (blog.user.toString() !== req.user) {
     return resp
       .status(401)
       .json({ error: "you can only delete your own blogs" });
   }
 
-  await blog.remove();
+  Blog.findByIdAndDelete(id);
 
   resp.status(204).end();
 });

@@ -4,6 +4,7 @@ const User = require("../models/user");
 
 const app = require("../app");
 const api = supertest(app);
+const config = require("../utils/config")
 const { blogsInDb, initialBlogs } = require("./blog_helper");
 
 const Blog = require("../models/blog");
@@ -16,17 +17,25 @@ beforeEach(async () => {
 
   const [username, name, password] = ["test", "test", "test"];
 
-  const user = { name, username, password };
-  let resp = await api.post("/api/users").send(user).expect(201);
+  let resp = await api
+    .post("/api/users")
+    .send({ name, username, password })
+    .expect(201);
+
+  resp = await api
+    .post("/api/login")
+    .send({ username, password })
+    .expect(200);
+  token = resp.body.token;
+
+  const user = await User.findOne({ username })
 
   const blogObjects = initialBlogs.map(
-    (blog) => new Blog({ ...blog, user: resp.body.id }),
+    (blog) => new Blog({ ...blog, user: user._id.toString() }),
   );
+
   const blogs = blogObjects.map((blog) => blog.save());
   await Promise.all(blogs);
-
-  resp = await api.post("/api/login").send({ username, password }).expect(200);
-  token = resp.body.token;
 });
 
 describe("viewing blogs", () => {
@@ -120,9 +129,9 @@ describe("creating and modifying blogs", () => {
     const newBlog = { ...blog, likes: blog.likes + 5 };
 
     const resp = await api
-      .put(`/api/blogs/${blog.id}`)
+      .put(`/api/blogs/${newBlog.id}`)
       .set("Authorization", `Bearer ${token}`)
-      .send(blog)
+      .send(newBlog)
       .expect(200);
 
     const blogsAtEnd = await blogsInDb();
@@ -147,5 +156,5 @@ describe("creating and modifying blogs", () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.close();
+  // await mongoose.connection.close();
 });
