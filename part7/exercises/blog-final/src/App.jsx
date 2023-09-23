@@ -1,56 +1,41 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
 import './app.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  newNotification,
-} from './reducers/notificationReducer'
-
-const Notification = () => {
-  const message = useSelector((state) => state.notification)
-  if (message === null) {
-    return null
-  }
-  return <div className={message.type}>{message.content}</div>
-}
+  initializeBlogs,
+  createBlog,
+  likeBlog,
+  removeBlog,
+} from './reducers/blogReducer'
+import { newNotification } from './reducers/notificationReducer'
+import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
-  const [user, setUser] = useState(null)
-
   const dispatch = useDispatch()
+  const blogs = useSelector((state) => state.blogs)
+  const user = useSelector((state) => state.user)
 
   useEffect(() => {
-    blogService.getAll().then((resp) => setBlogs(resp))
+    dispatch(initializeBlogs())
   }, [])
 
   useEffect(() => {
-    const userJson = window.localStorage.getItem('blogUser')
-    if (userJson) {
-      const user = JSON.parse(userJson)
-
-      setUser(user)
-      blogService.setToken(user.token)
-    }
+    dispatch(autoLoginUser())
   }, [])
 
   const blogFormRef = useRef()
 
-  const newLogin = async (credentials) => {
+  const handleLogin = async (credentials) => {
     try {
-      const user = await loginService.login(credentials)
-
-      window.localStorage.setItem('blogUser', JSON.stringify(user))
-
-      blogService.setToken(user.token)
-      setUser(user)
+      dispatch(loginUser(credentials))
       dispatch(newNotification({ content: 'welcome', type: 'message' }, 5000))
     } catch (e) {
+      console.log(e)
       e.message === 'Network Error'
         ? dispatch(
           newNotification({
@@ -59,27 +44,31 @@ const App = () => {
           }),
         )
         : dispatch(
-          newNotification({ content: 'wrong credentials', type: 'error' }, 5000),
+          newNotification(
+            { content: 'wrong credentials', type: 'error' },
+            5000,
+          ),
         )
     }
   }
 
-  const createBlog = async (newBlog) => {
+  const handleCreateBlog = async (newBlog) => {
     blogFormRef.current.toggleVisibility()
 
     try {
-      await blogService.create(newBlog)
-      setBlogs([...blogs, newBlog])
-
-      dispatch(
-        newNotification(
-          {
-            content: `${newBlog.title} by ${newBlog.author} was added`,
-            type: 'message',
-          },
-          5000,
-        ),
-      )
+      dispatch(createBlog(newBlog))
+        .then(() => {
+          const content = `${newBlog.title} by ${newBlog.author} was added`
+          dispatch(
+            newNotification(
+              {
+                content,
+                type: 'message',
+              },
+              5000,
+            ),
+          )
+        }).catch(() => dispatch(resetUser()))
     } catch (e) {
       dispatch(
         newNotification(
@@ -93,10 +82,9 @@ const App = () => {
     }
   }
 
-  const removeBlog = async (id) => {
+  const handleRemoveBlog = async (id) => {
     try {
-      await blogService.remove(id)
-      setBlogs(blogs.filter((blog) => blog.id !== id))
+      dispatch(removeBlog(id)).catch(() => dispatch(resetUser()))
     } catch (e) {
       console.log(e)
       const { error } = e.response.data
@@ -105,17 +93,18 @@ const App = () => {
     }
   }
 
-  const addLike = async (blog) => {
+  const handleLikeBlog = async (blog) => {
     try {
-      const newBlog = await blogService.update(blog)
-      setBlogs(blogs.map((blog) => (blog.id === newBlog.id ? newBlog : blog)))
+      dispatch(likeBlog(blog)).then(() => {
+        dispatch(
+          newNotification(
+            { content: `you liked ${blog.title}`, type: 'message' },
+            5000,
+          ),
+        )
+      }).catch(() => dispatch(resetUser()))
 
-      dispatch(
-        newNotification(
-          { content: `you liked ${newBlog.title}`, type: 'message' },
-          5000,
-        ),
-      )
+
     } catch (e) {
       dispatch(
         newNotification({ content: e.response.data, type: 'message' }, 5000),
@@ -124,22 +113,21 @@ const App = () => {
   }
 
   const handleLogout = async () => {
-    window.localStorage.removeItem('blogUser')
-    setUser(null)
+    dispatch(resetUser())
   }
 
   const blogList = () => {
     return (
       <ul>
-        {blogs
+        {[...blogs]
           .sort((a, b) => b.likes - a.likes)
           .map((blog) => (
             <Blog
-              removeBlog={removeBlog}
+              removeBlog={handleRemoveBlog}
               key={blog.id}
               blog={blog}
               username={user.username}
-              addLike={addLike}
+              addLike={handleLikeBlog}
             />
           ))}
       </ul>
@@ -149,7 +137,7 @@ const App = () => {
   const loginForm = () => {
     return (
       <Togglable buttonLabel="show login form">
-        <LoginForm newLogin={newLogin} />
+        <LoginForm newLogin={handleLogin} />
       </Togglable>
     )
   }
@@ -157,7 +145,7 @@ const App = () => {
   const blogForm = () => {
     return (
       <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={createBlog} />
+        <BlogForm createBlog={handleCreateBlog} />
       </Togglable>
     )
   }

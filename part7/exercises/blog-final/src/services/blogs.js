@@ -1,50 +1,42 @@
 import axios from 'axios'
+import { useSelector } from 'react-redux'
 const baseUrl = 'http://localhost:3000/api/blogs'
 
-let token = null
-
-const setToken = (newToken) => {
-  token = `Bearer ${newToken}`
-}
+const formatToken = (token) => `Bearer ${token}`
 
 const getAll = async () => {
   const resp = await axios.get(baseUrl)
   return resp.data
 }
 
-const create = async (blog) => {
+const create = async (blog, token) => {
   const config = {
-    headers: { Authorization: token }
+    headers: { Authorization: formatToken(token) }
   }
 
   const resp = await axios.post(baseUrl, blog, config)
   return resp.data
 }
 
-const update = async (blog) => {
-  blog = { ...blog, likes: (blog.likes || 0) + 1 }
-
-  // not very idiomatic but it works ig
-  const user = blog.user
-  const id = blog.id
-
-  blog.user = blog.user.id
-  delete blog.id
+const update = async (newBlog, token) => {
+  const { user, id } = newBlog
+  newBlog.user = user.id
+  delete newBlog.id
 
   const config = {
-    headers: { Authorization: token }
+    headers: { Authorization: formatToken(token) }
   }
 
-  const resp = await axios.put(`${baseUrl}/${id}`, blog, config)
+  const resp = await axios.put(`${baseUrl}/${id}`, newBlog, config)
   return { ...resp.data, user, id }
 }
 
-const remove = async (id) => {
+const remove = async (id, token) => {
   const config = {
-    headers: { Authorization: token }
+    headers: { Authorization: formatToken(token) }
   }
 
-  const resp = await axios.delete(`${baseUrl}/${id}`, config)
+  await axios.delete(`${baseUrl}/${id}`, config)
 }
 
-export default { getAll, create, setToken, update, remove }
+export default { getAll, create, update, remove }
