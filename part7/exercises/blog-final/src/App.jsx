@@ -4,6 +4,7 @@ import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
+import Users from './components/Users'
 import './app.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -14,6 +15,7 @@ import {
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
 import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
+import { Link, Route, Routes } from 'react-router-dom'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -153,14 +155,25 @@ const App = () => {
   return (
     <div>
       <Notification />
+      <div>
+        <Link style={{ padding: 5 }} to="/">home</Link>
+        <Link style={{ padding: 5 }} to="/users">users</Link>
+      </div>
+
       {user ? <h2>blogs</h2> : <h2>log in to application</h2>}
       {user ? (
-        <p>
-          {user.name} logged in <button onClick={handleLogout}>logout</button>
-        </p>
+        <div>
+          <p>
+            {user.name} logged in
+          </p>
+          <button onClick={handleLogout}>logout</button>
+        </div>
       ) : null}
-      {user ? blogForm() : null}
-      {user ? blogList() : loginForm()}
+
+      <Routes>
+        <Route path='/' element={user ? blogForm() && blogList() : loginForm() } />
+        <Route path='/users' element={<Users />} />
+      </Routes>
     </div>
   )
 }
