@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 
 const Blog = ({ blog, removeBlog, addLike }) => {
-  const username = useSelector(state => state.user.username)
+  const user = useSelector(state => state.user)
+  const [showAll, setShowAll] = useState(false)
+
+  if (!blog) return <div>this blog doesn't exist anymore!</div>
 
   const blogStyle = {
     listStyle: 'none',
@@ -14,7 +17,6 @@ const Blog = ({ blog, removeBlog, addLike }) => {
     marginBottom: 5,
   }
 
-  const [showAll, setShowAll] = useState(false)
 
   const handleRemove = () => {
     if (window.confirm(`remove ${blog.title} by ${blog.author}?`)) {
@@ -46,9 +48,9 @@ const Blog = ({ blog, removeBlog, addLike }) => {
           </button>
         </p>
         <p>added by {blog.user.name}</p>
-        {username === blog.user.username ? (
+        {user ? (user.username === blog.user.username ? (
           <button onClick={() => handleRemove(blog)}>remove</button>
-        ) : null}
+        ) : null) : null}
       </div>
     </li>
   )

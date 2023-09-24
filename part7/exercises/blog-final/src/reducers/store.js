@@ -5,8 +5,8 @@ import userReducer, { resetUser } from './userReducer'
 
 const handleError = store => next => action => {
   const state = store.getState()
-  console.log(state)
-  console.log(action)
+  // console.log(state)
+  // console.log(action)
 
   try {
     next(action)

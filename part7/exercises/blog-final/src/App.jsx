@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import UserBlogs from './components/UserBlogs'
 import Blog from './components/Blog'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
@@ -15,12 +16,18 @@ import {
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
 import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useMatch } from 'react-router-dom'
+import userService from './services/users'
 
 const App = () => {
   const dispatch = useDispatch()
+  const [users, setUsers] = useState(null)
   const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
+
+  useEffect(() => {
+    userService.getAll().then((users) => setUsers(users))
+  }, [])
 
   useEffect(() => {
     dispatch(initializeBlogs())
@@ -70,7 +77,8 @@ const App = () => {
               5000,
             ),
           )
-        }).catch(() => dispatch(resetUser()))
+        })
+        .catch(() => dispatch(resetUser()))
     } catch (e) {
       dispatch(
         newNotification(
@@ -97,16 +105,16 @@ const App = () => {
 
   const handleLikeBlog = async (blog) => {
     try {
-      dispatch(likeBlog(blog)).then(() => {
-        dispatch(
-          newNotification(
-            { content: `you liked ${blog.title}`, type: 'message' },
-            5000,
-          ),
-        )
-      }).catch(() => dispatch(resetUser()))
-
-
+      dispatch(likeBlog(blog))
+        .then(() => {
+          dispatch(
+            newNotification(
+              { content: `you liked ${blog.title}`, type: 'message' },
+              5000,
+            ),
+          )
+        })
+        .catch(() => dispatch(resetUser()))
     } catch (e) {
       dispatch(
         newNotification({ content: e.response.data, type: 'message' }, 5000),
@@ -120,19 +128,21 @@ const App = () => {
 
   const blogList = () => {
     return (
-      <ul>
-        {[...blogs]
-          .sort((a, b) => b.likes - a.likes)
-          .map((blog) => (
-            <Blog
-              removeBlog={handleRemoveBlog}
-              key={blog.id}
-              blog={blog}
-              username={user.username}
-              addLike={handleLikeBlog}
-            />
-          ))}
-      </ul>
+      <div>
+        <h2>blogs</h2>
+        <ul>
+          {[...blogs]
+            .sort((a, b) => b.likes - a.likes)
+            .map((blog) => (
+              <Blog
+                removeBlog={handleRemoveBlog}
+                key={blog.id}
+                blog={blog}
+                addLike={handleLikeBlog}
+              />
+            ))}
+        </ul>
+      </div>
     )
   }
 
@@ -152,27 +162,61 @@ const App = () => {
     )
   }
 
+  const blogMatch = useMatch('/blogs/:id')
+  const userMatch = useMatch('/users/:id')
+
+  const matchBlog = blogMatch
+    ? blogs.find((b) => b.id === blogMatch.params.id)
+    : null
+  const matchUser = userMatch
+    ? users.find((u) => u.id === userMatch.params.id)
+    : null
+
   return (
     <div>
       <Notification />
       <div>
-        <Link style={{ padding: 5 }} to="/">home</Link>
-        <Link style={{ padding: 5 }} to="/users">users</Link>
+        <Link style={{ padding: 5 }} to="/">
+          home
+        </Link>
+        <Link style={{ padding: 5 }} to="/blogs">
+          blogs
+        </Link>
+        <Link style={{ padding: 5 }} to="/users">
+          users
+        </Link>
+        {user ? (
+          <div>
+            <p>{user.name} logged in</p>
+            <button onClick={handleLogout}>logout</button>
+          </div>
+        ) : (
+          <Link style={{ padding: 5 }} to="/login">
+            login
+          </Link>
+        )}
       </div>
 
-      {user ? <h2>blogs</h2> : <h2>log in to application</h2>}
-      {user ? (
-        <div>
-          <p>
-            {user.name} logged in
-          </p>
-          <button onClick={handleLogout}>logout</button>
-        </div>
-      ) : null}
 
       <Routes>
-        <Route path='/' element={user ? blogForm() && blogList() : loginForm() } />
-        <Route path='/users' element={<Users />} />
+        <Route
+          path="/"
+          element={<h1>Welcome to my blog app!</h1>}
+        />
+        <Route path="/blogs" element={blogList()} />
+        <Route path="/login" element={loginForm()} />
+        <Route path="/users" element={<Users users={users} />} />
+        <Route
+          path="/blogs/:id"
+          element={
+            <Blog
+              blog={matchBlog}
+              addLike={handleLikeBlog}
+              removeBlog={handleRemoveBlog}
+            />
+          }
+        />
+        <Route path="/users/:id" element={<UserBlogs user={matchUser} />} />
       </Routes>
     </div>
   )
