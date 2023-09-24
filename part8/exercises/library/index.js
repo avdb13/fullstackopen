@@ -88,10 +88,16 @@ const typeDefs = `
     genres: [String]!
   }
 
+  type Author {
+    name: String!
+    bookCount: Int!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
     allBooks: [Book]
+    allAuthors: [Author]
   }
 `;
 
@@ -100,7 +106,15 @@ const resolvers = {
     bookCount: () => books.length,
     authorCount: () => [...new Set(books.map(b => b.author))].length,
     allBooks: () => books,
+    allAuthors: () => {
+      const authors = [...new Set(books.map(b => b.author))]
+      return authors
+        .map(name => ({name, bookCount: books.filter(b => b.author === name).length}))
+    }
   },
+  // Author: {
+  //   books: (root) => books.filter(b => root.name === b.author)
+  // }
 };
 
 const server = new ApolloServer({
