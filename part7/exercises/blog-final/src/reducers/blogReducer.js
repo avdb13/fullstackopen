@@ -18,8 +18,15 @@ const blogSlice = createSlice({
       )
     },
     remove(state, action) {
-      return state.filter(b => b.id !== action.payload)
-    }
+      return state.filter((b) => b.id !== action.payload)
+    },
+    comment(state, action) {
+      return state.map((b) =>
+        b.id === action.payload.id
+          ? { ...b, comments: [...b.comments, action.payload.comment] }
+          : b,
+      )
+    },
   },
 })
 
@@ -43,10 +50,27 @@ export const likeBlog = (blog) => {
   return async (dispatch, getState) => {
     let token = getState().user.token
 
-    const newBlog = await blogService.update({
-      ...blog,
-      likes: (blog.likes || 0) + 1,
-    }, token)
+    const newBlog = await blogService.update(
+      {
+        ...blog,
+        likes: (blog.likes || 0) + 1,
+      },
+      token,
+    )
+    dispatch(update(newBlog))
+  }
+}
+
+// clean this up later to only update the comment field
+export const commentBlog = (blog, comment) => {
+  return async (dispatch, getState) => {
+    // const newBlog = await blogService.comment(id, comment)
+    const newBlog = await blogService.update(
+      {
+        ...blog,
+        comments: [...blog.comments, comment]
+      },
+    )
     dispatch(update(newBlog))
   }
 }

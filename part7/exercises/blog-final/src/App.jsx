@@ -175,7 +175,7 @@ const App = () => {
   return (
     <div>
       <Notification />
-      <div>
+      <div style={{ backgroundColor: 'gray' }}>
         <Link style={{ padding: 5 }} to="/">
           home
         </Link>
@@ -186,10 +186,7 @@ const App = () => {
           users
         </Link>
         {user ? (
-          <div>
-            <p>{user.name} logged in</p>
-            <button onClick={handleLogout}>logout</button>
-          </div>
+          <>{user.name} logged in <button onClick={handleLogout}>logout</button></>
         ) : (
           <Link style={{ padding: 5 }} to="/login">
             login
