@@ -55,11 +55,9 @@ const Authors = ({ show, setError }) => {
       <h2>Set birthyear</h2>
       <form onSubmit={submit}>
         <div>
-          author
-          <input
-            value={name}
-            onChange={({ target }) => setName(target.value)}
-          />
+          <select defaultValue={name} onChange={(e) => setName(e.target.value)}>
+            {authors.map((a) => <option key={a.name}>{a.name}</option>)}
+          </select>
         </div>
         <div>
           birthyear
