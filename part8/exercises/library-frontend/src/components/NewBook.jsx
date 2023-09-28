@@ -1,4 +1,3 @@
-import { constraintDirective } from 'graphql-constraint-directive'
 import { useMutation } from '@apollo/client'
 import { useState } from 'react'
 import { ADD_BOOK, ALL_BOOKS } from '../queries'
