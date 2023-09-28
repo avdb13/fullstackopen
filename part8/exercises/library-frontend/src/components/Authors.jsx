@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client"
+import { useQuery } from '@apollo/client'
 import { ALL_AUTHORS } from '../queries'
 
 const Authors = ({ show }) => {
@@ -13,7 +13,6 @@ const Authors = ({ show }) => {
   }
 
   const authors = result.data.allAuthors
-  console.log(authors)
 
   return (
     <div>
