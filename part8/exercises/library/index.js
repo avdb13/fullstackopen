@@ -1,11 +1,14 @@
 require('dotenv').config()
+const bcrypt = require('bcrypt')
 const { v1: uuid } = require('uuid')
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 const Book = require('./models/book')
 const Author = require('./models/author')
+const User = require('./models/user')
 const { default: mongoose } = require('mongoose')
 const { GraphQLError } = require('graphql')
+const jwt = require('jsonwebtoken')
 
 const MONGODB_URI = process.env.MONGODB_URI
 
@@ -30,6 +33,16 @@ const typeDefs = `
     bookCount: Int
   }
 
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+
+  type Token {
+    value: String!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
@@ -38,6 +51,7 @@ const typeDefs = `
       genre: String
     ): [Book]
     allAuthors: [Author]
+    me: User
   }
 
   type Mutation {
@@ -51,6 +65,15 @@ const typeDefs = `
       name: String!
       setBornTo: Int!
     ): Author
+    createUser(
+      username: String!
+      favoriteGenre: String!
+      password: String!
+    ): User
+    login(
+      username: String!
+      password: String!
+    ): Token
   }
 `
 
@@ -61,14 +84,21 @@ const resolvers = {
     allBooks: async (root, { author, genre }) => {
       genre = genre || '.*'
 
-      const books = await Book.find({ genres: { $elemMatch: { $regex: genre } } }).populate('author')
-      return author ? (books.filter(b => b.author.name === author)) : books
+      const books = await Book.find({
+        genres: { $elemMatch: { $regex: genre } }
+      }).populate('author')
+      return author ? books.filter((b) => b.author.name === author) : books
     },
-    allAuthors: async () => Author.find({})
+    allAuthors: async () => Author.find({}),
+    me: async (root, args, context) => {
+      return context.currentUser
+    }
   },
   Author: {
     bookCount: async (root) => {
-      return Author.find({}).then(authors => authors.map(a => a.books.length))
+      return Author.find({}).then((authors) =>
+        authors.map((a) => a.books.length)
+      )
     }
   },
   Mutation: {
@@ -78,13 +108,18 @@ const resolvers = {
       } catch (e) {
         throw new GraphQLError('adding author for new book failed', {
           extensions: {
-            code: 'BAD_USER_INPUT', e
+            code: 'BAD_USER_INPUT',
+            e
           }
         })
       }
 
       // hack to insert new author if he doesn't exist
-      const author = await Author.findOneAndUpdate({ name: args.author }, {}, { upsert: true, new: true })
+      const author = await Author.findOneAndUpdate(
+        { name: args.author },
+        {},
+        { upsert: true, new: true }
+      )
 
       const newBook = new Book({ ...args, author: author._id })
       author.books = [...author.books, newBook._id]
@@ -95,7 +130,8 @@ const resolvers = {
       } catch (e) {
         throw new GraphQLError('adding new book failed', {
           extensions: {
-            code: 'BAD_USER_INPUT', e
+            code: 'BAD_USER_INPUT',
+            e
           }
         })
       }
@@ -103,7 +139,41 @@ const resolvers = {
       return newBook
     },
     editAuthor: async (root, { name, setBornTo }) => {
-      return Author.findOneAndUpdate({ name }, { born: setBornTo }, { new: true, upsert: true })
+      return Author.findOneAndUpdate(
+        { name },
+        { born: setBornTo },
+        { new: true, upsert: true }
+      )
+    },
+    createUser: async (root, args) => {
+      const password = await bcrypt.hash(args.password, 10)
+      const user = new User({ ...args, password })
+
+      return user.save().catch((e) => {
+        throw new GraphQLError('creating new user failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            e
+          }
+        })
+      })
+    },
+    login: async (root, { username, password }) => {
+      const user = await User.findOne({ username })
+      if (!user || !await bcrypt.compare(password, user.password)) {
+        throw new GraphQLError('wrong credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT'
+          }
+        })
+      }
+
+      const userForToken = {
+        username,
+        id: user._id
+      }
+
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     }
   }
 }
@@ -114,7 +184,22 @@ const server = new ApolloServer({
 })
 
 startStandaloneServer(server, {
-  listen: { port: 4000 }
+  listen: { port: 4000 },
+  context: async ({ req, resp }) => {
+    const auth = req ? req.headers.authorization : null
+
+    if (!auth || !auth.startsWith('Bearer ')) {
+      return null
+    }
+
+    const token = jwt.verify(
+      auth.substring('Bearer '.length),
+      process.env.JWT_SECRET
+    )
+    const currentUser = await User.findById(token.id)
+
+    return { currentUser }
+  }
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
