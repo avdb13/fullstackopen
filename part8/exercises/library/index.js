@@ -1,90 +1,24 @@
-const { v1: uuid } = require("uuid")
-const { ApolloServer } = require("@apollo/server");
-const { startStandaloneServer } = require("@apollo/server/standalone");
+require('dotenv').config()
+const { v1: uuid } = require('uuid')
+const { ApolloServer } = require('@apollo/server')
+const { startStandaloneServer } = require('@apollo/server/standalone')
+const Book = require('./models/book')
+const Author = require('./models/author')
+const { default: mongoose } = require('mongoose')
+const { GraphQLError } = require('graphql')
 
-let authors = [
-  {
-    name: "Robert Martin",
-    id: "afa51ab0-344d-11e9-a414-719c6709cf3e",
-    born: 1952,
-  },
-  {
-    name: "Martin Fowler",
-    id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963,
-  },
-  {
-    name: "Fyodor Dostoevsky",
-    id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
-    born: 1821,
-  },
-  {
-    name: "Joshua Kerievsky", // birthyear not known
-    id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
-  },
-  {
-    name: "Sandi Metz", // birthyear not known
-    id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
-  },
-];
+const MONGODB_URI = process.env.MONGODB_URI
 
-let books = [
-  {
-    title: "Clean Code",
-    published: 2008,
-    author: "Robert Martin",
-    id: "afa5b6f4-344d-11e9-a414-719c6709cf3e",
-    genres: ["refactoring"],
-  },
-  {
-    title: "Agile software development",
-    published: 2002,
-    author: "Robert Martin",
-    id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
-    genres: ["agile", "patterns", "design"],
-  },
-  {
-    title: "Refactoring, edition 2",
-    published: 2018,
-    author: "Martin Fowler",
-    id: "afa5de00-344d-11e9-a414-719c6709cf3e",
-    genres: ["refactoring"],
-  },
-  {
-    title: "Refactoring to patterns",
-    published: 2008,
-    author: "Joshua Kerievsky",
-    id: "afa5de01-344d-11e9-a414-719c6709cf3e",
-    genres: ["refactoring", "patterns"],
-  },
-  {
-    title: "Practical Object-Oriented Design, An Agile Primer Using Ruby",
-    published: 2012,
-    author: "Sandi Metz",
-    id: "afa5de02-344d-11e9-a414-719c6709cf3e",
-    genres: ["refactoring", "design"],
-  },
-  {
-    title: "Crime and punishment",
-    published: 1866,
-    author: "Fyodor Dostoevsky",
-    id: "afa5de03-344d-11e9-a414-719c6709cf3e",
-    genres: ["classic", "crime"],
-  },
-  {
-    title: "The Demon ",
-    published: 1872,
-    author: "Fyodor Dostoevsky",
-    id: "afa5de04-344d-11e9-a414-719c6709cf3e",
-    genres: ["classic", "revolution"],
-  },
-];
+mongoose
+  .connect(MONGODB_URI, { serverSelectionTimeoutMS: 0, connectTimeoutMS: 0 })
+  .then(console.log(`MongoDB connected to ${MONGODB_URI}`))
+  .catch((e) => console.log(`couldn't connect MongoDB: ${e}'`))
 
 const typeDefs = `
   type Book {
     title: String!
     published: Int!
-    author: String!
+    author: Author!
     id: ID!
     genres: [String]!
   }
@@ -109,8 +43,8 @@ const typeDefs = `
   type Mutation {
     addBook(
       title: String!
-      published: Int!
       author: String!
+      published: Int!
       genres: [String]!
     ): Book
     editAuthor(
@@ -118,47 +52,69 @@ const typeDefs = `
       setBornTo: Int!
     ): Author
   }
-`;
+`
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (root, args) => {
-      const bookFilter = book => book.author === args.author
-      const genreFilter = book => book.genres.includes(args.genre)
+    bookCount: async () => Book.collection.countDocuments(),
+    authorCount: async () => Author.collection.countDocuments(),
+    allBooks: async (root, { author, genre }) => {
+      genre = genre || '.*'
 
-      const result = args.author ? books.filter(bookFilter) : books
-      return args.genre ? result.filter(genreFilter) : result
+      const books = await Book.find({ genres: { $elemMatch: { $regex: genre } } }).populate('author')
+      return author ? (books.filter(b => b.author.name === author)) : books
     },
-    allAuthors: () => authors,
+    allAuthors: async () => Author.find({})
   },
   Author: {
-    bookCount: (root) => books.filter(b => b.author === root.name).length
+    bookCount: async (root) => {
+      return Author.find({}).then(authors => authors.map(a => a.books.length))
+    }
   },
   Mutation: {
-    addBook: (root, args) => {
-      if (!authors.includes(args.author)) {
-        authors = [...authors, ({ name: args.author, born: null })]
+    addBook: async (root, args) => {
+      try {
+        await Author.validate({ name: args.author })
+      } catch (e) {
+        throw new GraphQLError('adding author for new book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT', e
+          }
+        })
       }
-      const book = { ...args, id: uuid() }
-      books = [...books, book]
-      return book
+
+      // hack to insert new author if he doesn't exist
+      const author = await Author.findOneAndUpdate({ name: args.author }, {}, { upsert: true, new: true })
+
+      const newBook = new Book({ ...args, author: author._id })
+      author.books = [...author.books, newBook._id]
+
+      try {
+        await newBook.save()
+        await author.save()
+      } catch (e) {
+        throw new GraphQLError('adding new book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT', e
+          }
+        })
+      }
+
+      return newBook
     },
-    editAuthor: (root, args) => {
-      authors = authors.map(author => args.name === author.name ? ({ ...author, born: args.setBornTo }) : author)
-      return authors.find(author => args.name === author.name)
+    editAuthor: async (root, { name, setBornTo }) => {
+      return Author.findOneAndUpdate({ name }, { born: setBornTo }, { new: true, upsert: true })
     }
   }
-};
+}
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers,
-});
+  resolvers
+})
 
 startStandaloneServer(server, {
-  listen: { port: 4000 },
+  listen: { port: 4000 }
 }).then(({ url }) => {
-  console.log(`Server ready at ${url}`);
-});
+  console.log(`Server ready at ${url}`)
+})
