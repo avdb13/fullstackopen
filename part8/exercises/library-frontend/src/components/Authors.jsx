@@ -2,7 +2,7 @@ import { useMutation, useQuery } from '@apollo/client'
 import { ALL_AUTHORS, EDIT_BIRTHYEAR } from '../queries'
 import { useState } from 'react'
 
-const Authors = ({ show, setError }) => {
+const Authors = ({ show, setError, token }) => {
   const [birthyear, setBirthyear] = useState('')
   const [name, setName] = useState('')
 
@@ -52,22 +52,28 @@ const Authors = ({ show, setError }) => {
           ))}
         </tbody>
       </table>
-      <h2>Set birthyear</h2>
-      <form onSubmit={submit}>
-        <div>
-          <select defaultValue={name} onChange={(e) => setName(e.target.value)}>
-            {authors.map((a) => <option key={a.name}>{a.name}</option>)}
-          </select>
-        </div>
-        <div>
+      {token ? (
+        <>
+          <h2>Set birthyear</h2>
+          <form onSubmit={submit}>
+            <div>
+              <select defaultValue={name} onChange={(e) => setName(e.target.value)}>
+                {authors.map((a) => <option key={a.name}>{a.name}</option>)}
+              </select>
+            </div>
+            <div>
           birthyear
-          <input
-            value={birthyear}
-            onChange={({ target }) => setBirthyear(target.value)}
-          />
-        </div>
-        <button type="submit">change birthyear</button>
-      </form>
+              <input
+                value={birthyear}
+                onChange={({ target }) => setBirthyear(target.value)}
+              />
+            </div>
+            <button type="submit">change birthyear</button>
+          </form>
+        </>
+      ) : (
+        null
+      )}
     </div>
   )
 }

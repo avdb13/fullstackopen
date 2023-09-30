@@ -12,10 +12,10 @@ const NewBook = ({ show, setError }) => {
   const [addBook, { error }] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }],
     onError: (e) => {
+      console.log(JSON.parse(JSON.stringify(e)))
       setError(e.graphQLErrors.map(e => e.message).join('\n'))
     },
   })
-  console.dir(error)
 
   if (!show) {
     return null
@@ -24,7 +24,6 @@ const NewBook = ({ show, setError }) => {
   const submit = async (event) => {
     event.preventDefault()
 
-    // GQL validation would be nice
     addBook({
       variables: { title, author, published: Number(published), genres },
     })
