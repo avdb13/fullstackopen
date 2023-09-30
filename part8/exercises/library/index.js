@@ -102,14 +102,11 @@ const resolvers = {
     }
   },
   Mutation: {
-    addBook: async (root, args) => {
-      try {
-        await Author.validate({ name: args.author })
-      } catch (e) {
-        throw new GraphQLError('adding author for new book failed', {
+    addBook: async (root, args, { currentUser }) => {
+      if (!currentUser) {
+        throw new GraphQLError('Not authenticated', {
           extensions: {
-            code: 'BAD_USER_INPUT',
-            e
+            code: 'BAD_USER_INPUT'
           }
         })
       }
@@ -118,8 +115,15 @@ const resolvers = {
       const author = await Author.findOneAndUpdate(
         { name: args.author },
         {},
-        { upsert: true, new: true }
-      )
+        { upsert: true, new: true, runValidators: true }
+      ).catch((e) => {
+        throw new GraphQLError('adding author for new book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            e
+          }
+        })
+      })
 
       const newBook = new Book({ ...args, author: author._id })
       author.books = [...author.books, newBook._id]
@@ -138,7 +142,14 @@ const resolvers = {
 
       return newBook
     },
-    editAuthor: async (root, { name, setBornTo }) => {
+    editAuthor: async (root, { name, setBornTo }, { currentUser }) => {
+      if (!currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: {
+            code: 'BAD_USER_INPUT'
+          }
+        })
+      }
       return Author.findOneAndUpdate(
         { name },
         { born: setBornTo },
@@ -160,7 +171,7 @@ const resolvers = {
     },
     login: async (root, { username, password }) => {
       const user = await User.findOne({ username })
-      if (!user || !await bcrypt.compare(password, user.password)) {
+      if (!user || !(await bcrypt.compare(password, user.password))) {
         throw new GraphQLError('wrong credentials', {
           extensions: {
             code: 'BAD_USER_INPUT'
