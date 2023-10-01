@@ -6,18 +6,7 @@ import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
 import Recommended from './components/Recommended'
 import { useApolloClient, useSubscription } from '@apollo/client'
-import { onError } from '@apollo/client/link/error'
 
-// Log any GraphQL errors or network error that occurred
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors)
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      console.log(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
-    )
-  if (networkError) console.log(`[Network error]: ${networkError}`)
-})
 
 const Notification = ({ message }) =>
   message === null ? null : <div style={{ color: 'orangered' }}>{message}</div>
@@ -30,7 +19,7 @@ const App = () => {
 
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
-      window.alert(`received: ${data}`)
+      window.alert(`received: ${JSON.stringify(data.data.bookAdded)}`)
     }
   })
 
@@ -58,9 +47,9 @@ const App = () => {
       <div>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
-        <button onClick={() => setPage('recommended')}>recommended</button>
         {token ? (
           <>
+            <button onClick={() => setPage('recommended')}>recommended</button>
             <button onClick={() => setPage('add')}>add book</button>
             <button onClick={logout}>logout</button>
           </>

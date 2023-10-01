@@ -11,17 +11,17 @@ const Books = ({ show }) => {
     if (!result.previousData && result.data) {
       setGenres([...new Set(result.data.allBooks.map(b => b.genres).flat())])
     }
-  }, [result.data])
+  }, [result])
 
   useEffect(() => {
     result.refetch({ genre })
   }, [genre])
 
-  if (!show || result.loading) {
+  if (!show) {
     return null
   }
 
-  const books = result.data.allBooks
+  const books = result.loading ? result.previousData.allBooks : result.data.allBooks
 
   return (
     <div>

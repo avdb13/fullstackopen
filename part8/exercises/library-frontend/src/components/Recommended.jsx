@@ -9,10 +9,11 @@ const Recommended = ({ show }) => {
     return null
   }
 
-  if (bookResult.loading) {
+  if (bookResult.loading || userResult.loading) {
     return <div>loading ...</div>
   }
 
+  console.log(userResult)
   const books = bookResult.data.allBooks
   const user = userResult.data.me
 
