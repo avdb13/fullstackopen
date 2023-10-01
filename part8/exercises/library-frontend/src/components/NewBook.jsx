@@ -10,11 +10,17 @@ const NewBook = ({ show, setError }) => {
   const [genres, setGenres] = useState([])
 
   const [addBook, { error }] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }],
     onError: (e) => {
       console.log(JSON.parse(JSON.stringify(e)))
       setError(e.graphQLErrors.map(e => e.message).join('\n'))
     },
+    update: (cache, resp) => {
+      cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => {
+        return {
+          allBooks: [...allBooks, resp.data.addBook]
+        }
+      })
+    }
   })
 
   if (!show) {

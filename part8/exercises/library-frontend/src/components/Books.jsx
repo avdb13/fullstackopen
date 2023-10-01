@@ -15,6 +15,10 @@ const Books = ({ show }) => {
     return null
   }
 
+  if (bookResult.loading || genreResult.loading) {
+    return null
+  }
+
   const genres = [...new Set(genreResult.data.allBooks.map(b => b.genres).flat())]
   const books = bookResult.data.allBooks
 
