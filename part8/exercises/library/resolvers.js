@@ -23,7 +23,8 @@ const resolvers = {
     },
     allAuthors: async () => Author.find({}),
     me: async (root, args, context) => {
-      return context.currentUser
+      console.log(context.user)
+      return context.user
     }
   },
   Author: {

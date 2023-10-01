@@ -1,6 +1,5 @@
 require('dotenv').config()
 const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
 const {
   ApolloServerPluginDrainHttpServer: drainHttpServer
 } = require('@apollo/server/plugin/drainHttpServer')
@@ -23,32 +22,6 @@ mongoose
   .connect(MONGODB_URI, { serverSelectionTimeoutMS: 0, connectTimeoutMS: 0 })
   .then(console.log(`MongoDB connected to ${MONGODB_URI}`))
   .catch((e) => console.log(`couldn't connect MongoDB: ${e}'`))
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers
-})
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-  context: async ({ req, resp }) => {
-    const auth = req ? req.headers.authorization : null
-
-    if (!auth || !auth.startsWith('Bearer ')) {
-      return null
-    }
-
-    const token = jwt.verify(
-      auth.substring('Bearer '.length),
-      process.env.JWT_SECRET
-    )
-    const currentUser = await User.findById(token.id)
-
-    return { currentUser }
-  }
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
 
 const start = async () => {
   const app = express()
@@ -89,7 +62,9 @@ const start = async () => {
             auth.substring('Bearer '.length),
             process.env.JWT_SECRET
           )
-          return User.findById(token.id)
+
+          const user = await User.findById(token.id)
+          return { user }
         }
       }
     })
