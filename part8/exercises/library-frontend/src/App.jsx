@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { BOOK_ADDED } from './queries'
+import { BOOK_ADDED, ALL_BOOKS } from './queries'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
 import Recommended from './components/Recommended'
 import { useApolloClient, useSubscription } from '@apollo/client'
-
 
 const Notification = ({ message }) =>
   message === null ? null : <div style={{ color: 'orangered' }}>{message}</div>
@@ -19,8 +18,12 @@ const App = () => {
 
   useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
-      window.alert(`received: ${JSON.stringify(data.data.bookAdded)}`)
-    }
+      const book = data.data.bookAdded
+      const unique = (arr) => [...new Set(arr)]
+      client.cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => ({
+        allBooks: [...unique(allBooks), book],
+      }))
+    },
   })
 
   useEffect(() => {

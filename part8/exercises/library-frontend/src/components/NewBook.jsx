@@ -9,15 +9,15 @@ const NewBook = ({ show, setError }) => {
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
-  const [addBook, { error }] = useMutation(ADD_BOOK, {
+  const [addBook] = useMutation(ADD_BOOK, {
     onError: (e) => {
-      console.log(JSON.parse(JSON.stringify(e)))
       setError(e.graphQLErrors.map(e => e.message).join('\n'))
     },
     update: (cache, resp) => {
       cache.updateQuery({ query: ALL_BOOKS }, ({ allBooks }) => {
+        const unique = (arr) => [...new Set(arr)]
         return {
-          allBooks: [...allBooks, resp.data.addBook]
+          allBooks: [...unique(allBooks), resp.data.book]
         }
       })
     }

@@ -1,4 +1,4 @@
-import { ApolloClient, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../queries'
 import { useEffect, useState } from 'react'
 
