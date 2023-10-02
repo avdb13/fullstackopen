@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@types/node": "^20.8.0"
+  },
+  "scripts": {
+    "calculateExercises": "ts-node exerciseCalculator.ts"
   }
 }
