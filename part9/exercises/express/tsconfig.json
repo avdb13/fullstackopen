@@ -10,6 +10,7 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
     "esModuleInterop": true,
-    "declaration": true,
-  }
+    "declaration": true
+  },
+  "files": ["./index.ts", "./.eslintrc.js"]
 }
