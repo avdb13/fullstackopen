@@ -8,9 +8,29 @@ interface Result {
   average: number;
 }
 
-const usage = <const>"usage: exercises [hours: 7]";
+const usage = <const>"usage: exercises [hours]";
 
-const parseArgsAndCalculate = (args: Array<string>): Result => {
+export const exerciseCalculator = (total: Array<number>, target: number): Result => {
+  const average = total.reduce((acc, next) => (acc += next)) / total.length;
+  const [rating, ratingDescription] =
+    target < average
+      ? [3, "excellent!"]
+      : target - average < 1
+      ? [2, "not too bad but could be better"]
+      : [1, "pathetic"];
+
+  return {
+    periodLength: total.length,
+    trainingDays: total.filter((n) => n !== 0).length,
+    success: average > target,
+    rating,
+    ratingDescription,
+    target,
+    average,
+  }
+}
+
+const parseArgs = (args: Array<string>) => {
   if (args.length != 4) throw new Error(usage);
 
   const arr = args[2]
@@ -19,33 +39,21 @@ const parseArgsAndCalculate = (args: Array<string>): Result => {
     .map((n) => Number(n));
 
   if (!arr.includes(NaN) && !isNaN(Number(args[3]))) {
-    const average = arr.reduce((acc, next) => (acc += next)) / arr.length;
-    const [rating, ratingDescription] =
-      Number(args[3]) < average
-        ? [3, "excellent!"]
-        : average - Number(args[3]) < 1
-        ? [2, "not too bad but could be better"]
-        : [1, "pathetic"];
-
-    return {
-      periodLength: arr.length,
-      trainingDays: arr.filter((n) => n !== 0).length,
-      success: average > Number(args[3]),
-      rating,
-      ratingDescription,
-      target: Number(args[3]),
-      average,
-    };
+    return { total: arr, hours: Number(args[3]) }
   } else {
     throw new Error(usage);
   }
-};
+}
 
-try {
-  const result = parseArgsAndCalculate(process.argv)
-  console.log(result)
-} catch(e: unknown) {
-  if (e instanceof Error) {
-    console.error(e.message)
+if (2 < process.argv.length) {
+  try {
+    const { total, hours } = parseArgs(process.argv)
+    const result = exerciseCalculator(total, hours)
+    console.log(result)
+  } catch(e: unknown) {
+    if (e instanceof Error) {
+      console.error(e.message)
+    }
   }
 }
+
