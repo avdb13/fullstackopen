@@ -1,17 +1,62 @@
-interface CoursePart {
-  name: string;
-  exerciseCount: number;
-}
+import { CoursePart, assertNever } from "./types";
+
+const Part = ({ part }: { part: CoursePart }) => (
+  <div>
+    <p>
+      <strong>{part.name}</strong> {part.exerciseCount}
+    </p>
+  </div>
+);
+const Content = ({ part }: { part: CoursePart }) => {
+  const description = part.description ? (
+    <p>
+      <em>{part.description}</em>
+    </p>
+  ) : null;
+
+  switch (part.kind) {
+    case "basic":
+      return <div>{description}</div>;
+    case "group":
+      return (
+        <div>
+          {description}
+          project exercises {part.groupProjectCount}
+        </div>
+      );
+    case "background":
+      return (
+        <div>
+          {description}
+          submit to {part.backgroundMaterial}
+        </div>
+      );
+    case "special":
+      return (
+        <div>
+          {description}
+          required skills: {part.requirements.join(", ")}
+        </div>
+      );
+    default:
+      assertNever(part);
+  }
+};
 
 const Header = ({ courseName }: { courseName: string }) => (
   <h1>{courseName}</h1>
-)
+);
 
-const Content = ({ courseParts }: { courseParts: CoursePart[] }) => (
+const Contents = ({ courseParts }: { courseParts: CoursePart[] }) => (
   <ul>
-    {courseParts.map(part => <li key={part.name}>{part.name} {part.exerciseCount}</li>)}
+    {courseParts.map((part) => (
+      <li key={part.name}>
+        <Part part={part} />
+        <Content part={part} />
+      </li>
+    ))}
   </ul>
-)
+);
 
 const Total = ({ courseParts }: { courseParts: CoursePart[] }) => {
   return (
@@ -19,30 +64,57 @@ const Total = ({ courseParts }: { courseParts: CoursePart[] }) => {
       Number of exercises{" "}
       {courseParts.reduce((carry, part) => carry + part.exerciseCount, 0)}
     </p>
-  )
-}
+  );
+};
 
 const App = () => {
   const courseName: string = "Half Stack application development";
   const courseParts: CoursePart[] = [
     {
+      name: "Backend development",
+      exerciseCount: 21,
+      description: "Typing the backend",
+      requirements: ["nodejs", "jest"],
+      kind: "special",
+    },
+    {
       name: "Fundamentals",
-      exerciseCount: 10
+      exerciseCount: 10,
+      description: "This is an awesome course part",
+      kind: "basic",
     },
     {
       name: "Using props to pass data",
-      exerciseCount: 7
+      exerciseCount: 7,
+      groupProjectCount: 3,
+      kind: "group",
+    },
+    {
+      name: "Basics of type Narrowing",
+      exerciseCount: 7,
+      description: "How to go from unknown to string",
+      kind: "basic",
     },
     {
       name: "Deeper type usage",
-      exerciseCount: 14
-    }
+      exerciseCount: 14,
+      description: "Confusing description",
+      backgroundMaterial:
+        "https://type-level-typescript.com/template-literal-types",
+      kind: "background",
+    },
+    {
+      name: "TypeScript in frontend",
+      exerciseCount: 10,
+      description: "a hard part",
+      kind: "basic",
+    },
   ];
 
   return (
     <div>
       <Header courseName={courseName} />
-      <Content courseParts={courseParts} />
+      <Contents courseParts={courseParts} />
       <Total courseParts={courseParts} />
     </div>
   );
