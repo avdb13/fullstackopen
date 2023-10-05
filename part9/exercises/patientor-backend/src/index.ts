@@ -5,8 +5,8 @@ import patientRouter from "./routes/patients";
 
 const app = express()
 app.use(cors<Request>())
-// app.use(express.json())
-//
+app.use(express.json())
+
 app.use("/api/diagnoses", diagnoseRouter)
 app.use("/api/patients", patientRouter)
 
