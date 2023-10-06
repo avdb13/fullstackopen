@@ -12,12 +12,13 @@ const App = () => {
   const [diaries, setDiaries] = useState<DiaryEntry[]>([]);
   const [notification, setNotification] = useState<string>("");
 
+  const visibilities = Object.values(Visibility).map(v => v.toString())
+  const weathers = Object.values(Weather).map(v => v.toString())
+
   const [date, resetDate] = useField("date");
-  const [visibility, resetVisibility] = useField("text");
-  const [weather, resetWeather] = useField("text");
   const [comment, resetComment] = useField("text");
-  const resetAll = () =>
-    resetDate() && resetVisibility() && resetWeather() && resetComment();
+  const [visibility, setVisibility] = useState(visibilities[0]);
+  const [weather, setWeather] = useState(weathers[0]);
 
   useEffect(() => {
     getAll().then((diaries) => setDiaries(diaries));
@@ -28,15 +29,18 @@ const App = () => {
 
     const diary: NewDiaryEntry = {
       date: date.value,
-      visibility: visibility.value as Visibility,
-      weather: weather.value as Weather,
+      visibility: visibility as Visibility,
+      weather: weather as Weather,
       comment: comment.value,
     };
 
     create(diary)
       .then((newDiary) => {
         setDiaries([...diaries, newDiary]);
-        resetAll();
+        resetDate()
+        resetComment()
+        setVisibility(visibilities[0])
+        setWeather(weathers[0])
       })
       .catch((e) => {
         if (axios.isAxiosError(e)) {
@@ -54,10 +58,14 @@ const App = () => {
           date: <input {...date} />
         </p>
         <p>
-          visibility: <input {...visibility} />
+          visibility: {visibilities.map(v => (
+            <><input type="radio" name="visibility" checked={v === visibility} onChange={() => setVisibility(v)} />{v}</>
+          ))}
         </p>
         <p>
-          weather: <input {...weather} />
+          weather: {weathers.map(v => (
+            <><input type="radio" name="weather" checked={v === weather} onChange={() => setWeather(v)} />{v}</>
+          ))}
         </p>
         <p>
           comment: <input {...comment} />
