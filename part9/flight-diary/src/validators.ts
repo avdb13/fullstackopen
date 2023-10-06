@@ -57,19 +57,17 @@ const toNewDiaryEntry = (obj: unknown): NewDiaryEntry => {
     throw new Error("incorrect or missing data");
   }
 
-  console.log(obj)
-
   if (
-    "comment" in obj &&
     "date" in obj &&
+    "visibility" in obj &&
     "weather" in obj &&
-    "visibility" in obj
+    "comment" in obj
   ) {
     const newEntry: NewDiaryEntry = {
-      comment: parseComment(obj.comment),
       date: parseDate(obj.date),
-      weather: parseWeather(obj.weather),
       visibility: parseVisibility(obj.visibility),
+      weather: parseWeather(obj.weather),
+      comment: parseComment(obj.comment),
     };
 
     return newEntry;
