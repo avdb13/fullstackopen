@@ -44,6 +44,6 @@ const data = [
   },
 ];
 
-const patients: Patient[] = data.map((p) => ({ ...toNewPatient(p), id: p.id }));
+const patients: Patient[] = data.map((p) => ({ ...toNewPatient(p), id: p.id, entries: [] }));
 
 export default patients;

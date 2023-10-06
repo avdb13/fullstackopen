@@ -2,8 +2,23 @@ import patients from "../data/patients";
 import { v1 as uuid } from "uuid";
 import { Patient, NonSensitivePatient, NewPatient } from "../types";
 
-const getPatients = (): Patient[] => {
+const getAllPatients = (): Patient[] => {
   return patients;
+};
+
+const getNonSensitivePatient = (id: string): NonSensitivePatient => {
+  const patient = patients.filter((p) => p.id === id)[0];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ssn, ...partial } = patient;
+    return partial;
+};
+
+const getAllNonSensitivePatients = (): NonSensitivePatient[] => {
+  return patients.map((p) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ssn, ...partial } = p;
+    return partial;
+  });
 };
 
 const addPatient = (entry: NewPatient): Patient => {
@@ -12,6 +27,7 @@ const addPatient = (entry: NewPatient): Patient => {
 
   const newPatient: Patient = {
     ...entry,
+    entries: [],
     id,
   };
 
@@ -19,12 +35,5 @@ const addPatient = (entry: NewPatient): Patient => {
   return newPatient;
 };
 
-const getNonSensitivePatients = (): NonSensitivePatient[] => {
-  return patients.map((p) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { ssn, ...partial } = p;
-    return partial;
-  });
-};
 
-export default { getPatients, getNonSensitivePatients, addPatient };
+export default { getAllPatients, getNonSensitivePatient, getAllNonSensitivePatients, addPatient };
