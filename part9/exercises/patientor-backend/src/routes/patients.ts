@@ -9,7 +9,7 @@ router.get("/", (_req, resp) => {
 
 router.get("/:id", (req, resp) => {
   const id = req.params.id;
-  resp.send(patientService.getNonSensitivePatient(id));
+  resp.send(patientService.getPatient(id));
 });
 
 router.post("/", (req, resp) => {

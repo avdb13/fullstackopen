@@ -6,11 +6,8 @@ const getAllPatients = (): Patient[] => {
   return patients;
 };
 
-const getNonSensitivePatient = (id: string): NonSensitivePatient => {
-  const patient = patients.filter((p) => p.id === id)[0];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { ssn, ...partial } = patient;
-    return partial;
+const getPatient = (id: string): Patient => {
+  return patients.filter((p) => p.id === id)[0];
 };
 
 const getAllNonSensitivePatients = (): NonSensitivePatient[] => {
@@ -36,4 +33,4 @@ const addPatient = (entry: NewPatient): Patient => {
 };
 
 
-export default { getAllPatients, getNonSensitivePatient, getAllNonSensitivePatients, addPatient };
+export default { getAllPatients, getPatient, getAllNonSensitivePatients, addPatient };
