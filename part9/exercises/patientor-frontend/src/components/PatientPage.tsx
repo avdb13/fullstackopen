@@ -1,16 +1,18 @@
-import { Patient } from "../types";
+import { Diagnosis, Patient } from "../types";
 import {
   Typography,
   Container,
-  ListItem,
-  List,
-  ListItemIcon,
 } from "@mui/material";
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
-import StarIcon from "@mui/icons-material/Star";
 
-const PatientPage = ({ patient }: { patient: Patient }) => {
+const PatientPage = ({
+  patient,
+  diagnoses,
+}: {
+  patient: Patient;
+  diagnoses: Diagnosis[];
+}) => {
   const gender = patient.gender === "male" ? <MaleIcon /> : <FemaleIcon />;
   return (
     <div>
@@ -32,18 +34,16 @@ const PatientPage = ({ patient }: { patient: Patient }) => {
           entries
         </Typography>
         {patient.entries?.map((entry) => (
-          <div>
+          <div key={entry.id}>
             {entry.date} <em>{entry.description}</em>
-            <List>
+            <ul>
               {entry.diagnosisCodes?.map((code) => (
-                <ListItem>
-                  <ListItemIcon>
-                    <StarIcon />
-                  </ListItemIcon>
-                  {code}
-                </ListItem>
+                <li key={code}>
+                  <strong>{code}</strong>{" "}
+                  {diagnoses.find((d) => d.code === code)!.name}
+                </li>
               ))}
-            </List>
+            </ul>
           </div>
         ))}
       </Container>
