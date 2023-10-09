@@ -3,7 +3,7 @@ import cors from "cors";
 import diagnoseRouter from "./routes/diagnoses";
 import patientRouter from "./routes/patients";
 
-const app = express()
+export const app = express()
 app.use(cors<Request>())
 app.use(express.json())
 
