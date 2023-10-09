@@ -1,6 +1,6 @@
 import patients from "../data/patients";
 import { v1 as uuid } from "uuid";
-import { Patient, NonSensitivePatient, NewPatient } from "../types";
+import { Patient, NonSensitivePatient, NewPatient, EntryWithoutId, Entry } from "../types";
 
 const getAllPatients = (): Patient[] => {
   return patients;
@@ -32,5 +32,20 @@ const addPatient = (entry: NewPatient): Patient => {
   return newPatient;
 };
 
+const addPatientEntries = (patientId: string, entry: EntryWithoutId): Patient => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+  const id: string = uuid();
 
-export default { getAllPatients, getPatient, getAllNonSensitivePatients, addPatient };
+  const newEntry: Entry = {
+    ...entry,
+    id,
+  };
+
+  const updatedPatient = patients.find(p => p.id === patientId)!
+  updatedPatient.entries.push(newEntry)
+  // updates itself?
+  // patients = patients.map(p => p.id === patientId ? updatedPatient : p)
+  return updatedPatient;
+};
+
+export default { getAllPatients, getPatient, addPatientEntries, getAllNonSensitivePatients, addPatient };
