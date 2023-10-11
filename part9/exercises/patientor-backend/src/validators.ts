@@ -1,3 +1,4 @@
+import diagnoses from "../src/data/diagnoses";
 import {
   Entry,
   EntryWithoutId,
@@ -8,6 +9,7 @@ import {
   OccupationalHealthcareEntry,
   HealthCheckRating,
   genderList,
+  Diagnosis,
 } from "./types";
 
 const isString = (text: unknown): text is string => {
@@ -40,6 +42,9 @@ const isPatient = (v: unknown): v is NewPatient =>
   "ssn" in v &&
   "gender" in v &&
   "occupation" in v;
+
+const isDiagnosisCodes = (v: unknown): v is Array<Diagnosis["code"]> =>
+  Array.isArray(v) && v.every(d => isString(d) && diagnoses.map(d => d.code).includes(d))
 
 const isHospitalEntry = (v: EntryWithoutId): v is HospitalEntry =>
   v.type === "Hospital" &&
@@ -117,6 +122,21 @@ const parseEmployer = (employer: unknown): string => {
   return employer;
 };
 
+const parseCriteria = (criteria: unknown): string => {
+  if (!criteria || !isString(criteria)) {
+    throw new Error("incorrect or missing criteria");
+  }
+  return criteria;
+};
+
+const parseDiagnosisCodes = (diagnoses: unknown): Array<Diagnosis["code"]> => {
+  if (!diagnoses || !isDiagnosisCodes(diagnoses)) {
+    throw new Error("incorrect or missing diagnosis codes")
+  }
+
+  return diagnoses;
+}
+
 const parseHealthCheckEntry = (
   entry: EntryWithoutId,
 ): Omit<HealthCheckEntry, "id"> => {
@@ -178,13 +198,6 @@ const parseOccupationalHealthcareEntry = (
       };
 };
 
-const parseCriteria = (criteria: unknown): string => {
-  if (!criteria || !isString(criteria)) {
-    throw new Error("incorrect or missing criteria");
-  }
-  return criteria;
-};
-
 const toNewPatient = (obj: unknown): NewPatient => {
   if (!obj || typeof obj !== "object") {
     throw new Error("invalid data");
@@ -207,12 +220,14 @@ const toNewPatient = (obj: unknown): NewPatient => {
 
 const toNewEntry = (obj: unknown): EntryWithoutId => {
   if (isObject(obj) && isEntry(obj)) {
-    const newEntry: EntryWithoutId = {
+    let newEntry: EntryWithoutId = {
       ...obj,
       description: parseDescription(obj.description),
       date: parseDate(obj.date),
       specialist: parseSpecialist(obj.specialist),
     };
+
+    newEntry = obj.diagnosisCodes ? {...newEntry, diagnosisCodes: parseDiagnosisCodes(obj.diagnosisCodes)} : newEntry;
 
     switch (obj.type) {
       case "OccupationalHealthcare":

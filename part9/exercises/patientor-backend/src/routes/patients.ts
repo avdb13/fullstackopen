@@ -18,7 +18,7 @@ router.post("/", (req, resp) => {
     const newPatient = toNewPatient(req.body);
     const addedPatient = patientService.addPatient(newPatient);
 
-    resp.json(addedPatient);
+    resp.status(200).send(addedPatient);
   } catch (e: unknown) {
     if (e instanceof Error) {
       resp.status(400).send(`${e.message}`);
@@ -29,15 +29,14 @@ router.post("/", (req, resp) => {
 router.post("/:id/entries", (req, resp) => {
   try {
     if (!patients.map(p => p.id).includes(req.params.id)) {
-      throw new Error("invalid id for entry update")
+      resp.status(404).send("invalid id for entry update");
     }
 
     const newEntry = toNewEntry(req.body);
-
     const updatedPatient = patientService
       .addPatientEntries(req.params.id, newEntry);
 
-    resp.json(updatedPatient);
+    resp.status(200).send(updatedPatient);
   } catch (e: unknown) {
     if (e instanceof Error) {
       resp.status(400).send(`${e.message}`);
