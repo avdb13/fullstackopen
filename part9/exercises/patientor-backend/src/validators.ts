@@ -7,6 +7,7 @@ import {
   HealthCheckEntry,
   OccupationalHealthcareEntry,
   HealthCheckRating,
+  genderList,
 } from "./types";
 
 const isString = (text: unknown): text is string => {
@@ -18,9 +19,8 @@ const isDate = (date: string): boolean => {
 };
 
 const isGender = (gender: string): boolean => {
-  return Object.values(Gender)
-    .map((v) => v.toString())
-    .includes(gender);
+  const _genderList: readonly string[] = genderList;
+  return _genderList.includes(gender);
 };
 
 const isObject = (v: unknown): v is object =>
@@ -33,6 +33,14 @@ const isEntry = (v: unknown): v is Entry =>
   "specialist" in v &&
   "type" in v;
 
+const isPatient = (v: unknown): v is NewPatient =>
+  isObject(v) &&
+  "name" in v &&
+  "dateOfBirth" in v &&
+  "ssn" in v &&
+  "gender" in v &&
+  "occupation" in v;
+
 const isHospitalEntry = (v: EntryWithoutId): v is HospitalEntry =>
   v.type === "Hospital" &&
   "discharge" in v &&
@@ -40,12 +48,17 @@ const isHospitalEntry = (v: EntryWithoutId): v is HospitalEntry =>
   "criteria" in v.discharge;
 
 const isHealthCheckEntry = (v: EntryWithoutId): v is HealthCheckEntry =>
-  v.type === "HealthCheck" && "healthCheckrating" in v;
+  v.type === "HealthCheck" && "healthCheckRating" in v &&
+  Object.values(HealthCheckRating)
+    .includes(v.healthCheckRating);
 
 const isOccupationalHealthcareEntry = (
   v: EntryWithoutId,
-): v is OccupationalHealthcareEntry =>
-  v.type === "OccupationalHealthcare" && "emloyerName" in v;
+): v is OccupationalHealthcareEntry => {
+  return v.type === "OccupationalHealthcare" &&
+  "employerName" in v &&
+  (v.sickLeave ? "startDate" in v.sickLeave && "endDate" in v.sickLeave : true);
+}
 
 const parseName = (name: unknown): string => {
   if (!name || !isString(name)) {
@@ -104,19 +117,30 @@ const parseEmployer = (employer: unknown): string => {
   return employer;
 };
 
-const parseHealthCheckEntry = (entry: EntryWithoutId): Omit<HealthCheckEntry, "id"> => {
-  if (!isHealthCheckEntry(entry) || !Object.values(HealthCheckRating).includes(entry.healthCheckRating)) {
+const parseHealthCheckEntry = (
+  entry: EntryWithoutId,
+): Omit<HealthCheckEntry, "id"> => {
+  if (
+    !isHealthCheckEntry(entry) ||
+    !Object.values(HealthCheckRating).includes(entry.healthCheckRating)
+  ) {
     throw new Error("incorrect healthcheck entry");
   }
 
   return {
     ...entry,
     healthCheckRating: entry.healthCheckRating,
-  }
-}
+  };
+};
 
-const parseHospitalEntry = (entry: EntryWithoutId): Omit<HospitalEntry, "id"> => {
-  if (!isHospitalEntry(entry) || !isString(entry.discharge.date) || !isString(entry.discharge.criteria)) {
+const parseHospitalEntry = (
+  entry: EntryWithoutId,
+): Omit<HospitalEntry, "id"> => {
+  if (
+    !isHospitalEntry(entry) ||
+    !isString(entry.discharge.date) ||
+    !isString(entry.discharge.criteria)
+  ) {
     throw new Error("incorrect hospital entry");
   }
 
@@ -125,11 +149,13 @@ const parseHospitalEntry = (entry: EntryWithoutId): Omit<HospitalEntry, "id"> =>
     discharge: {
       date: parseDate(entry.discharge.date),
       criteria: parseCriteria(entry.discharge.criteria),
-    }
-  }
-}
+    },
+  };
+};
 
-const parseOccupationalHealthcareEntry = (entry: EntryWithoutId): Omit<OccupationalHealthcareEntry, "id"> => {
+const parseOccupationalHealthcareEntry = (
+  entry: EntryWithoutId,
+): Omit<OccupationalHealthcareEntry, "id"> => {
   if (!isOccupationalHealthcareEntry(entry) || !isString(entry.employerName)) {
     throw new Error("incorrect occupational healthcare entry");
   }
@@ -139,20 +165,18 @@ const parseOccupationalHealthcareEntry = (entry: EntryWithoutId): Omit<Occupatio
     employerName: parseEmployer(entry.employerName),
   };
 
-  if (entry.sickLeave) {
-    return {
-      ...required,
-      sickLeave: {
-        startDate: parseDate(entry.sickLeave.startDate),
-        endDate: parseDate(entry.sickLeave.endDate),
+  return entry.sickLeave
+    ? {
+        ...required,
+        sickLeave: {
+          startDate: parseDate(entry.sickLeave.startDate),
+          endDate: parseDate(entry.sickLeave.endDate),
+        },
       }
-    }
-  } else {
-    return {
-      ...required,
-    }
-  }
-}
+    : {
+        ...required,
+      };
+};
 
 const parseCriteria = (criteria: unknown): string => {
   if (!criteria || !isString(criteria)) {
@@ -163,16 +187,10 @@ const parseCriteria = (criteria: unknown): string => {
 
 const toNewPatient = (obj: unknown): NewPatient => {
   if (!obj || typeof obj !== "object") {
-    throw new Error("invalid or missing data");
+    throw new Error("invalid data");
   }
 
-  if (
-    "name" in obj &&
-    "dateOfBirth" in obj &&
-    "ssn" in obj &&
-    "gender" in obj &&
-    "occupation" in obj
-  ) {
+  if (isPatient(obj)) {
     const newPatient: NewPatient = {
       name: parseName(obj.name),
       dateOfBirth: parseDate(obj.dateOfBirth),
@@ -192,7 +210,7 @@ const toNewEntry = (obj: unknown): EntryWithoutId => {
     const newEntry: EntryWithoutId = {
       ...obj,
       description: parseDescription(obj.description),
-      date: parseDate(obj.description),
+      date: parseDate(obj.date),
       specialist: parseSpecialist(obj.specialist),
     };
 
@@ -207,6 +225,6 @@ const toNewEntry = (obj: unknown): EntryWithoutId => {
   }
 
   throw new Error("incorrect data: some fields are missing");
-}
+};
 
 export { toNewPatient, toNewEntry };

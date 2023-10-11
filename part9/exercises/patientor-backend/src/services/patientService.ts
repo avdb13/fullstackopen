@@ -43,8 +43,6 @@ const addPatientEntries = (patientId: string, entry: EntryWithoutId): Patient =>
 
   const updatedPatient = patients.find(p => p.id === patientId)!
   updatedPatient.entries.push(newEntry)
-  // updates itself?
-  // patients = patients.map(p => p.id === patientId ? updatedPatient : p)
   return updatedPatient;
 };
 

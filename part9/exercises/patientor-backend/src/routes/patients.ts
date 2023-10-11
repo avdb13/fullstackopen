@@ -33,9 +33,11 @@ router.post("/:id/entries", (req, resp) => {
     }
 
     const newEntry = toNewEntry(req.body);
-    const addedEntry = patientService.addPatientEntries(req.params.id, newEntry);
 
-    resp.json(addedEntry);
+    const updatedPatient = patientService
+      .addPatientEntries(req.params.id, newEntry);
+
+    resp.json(updatedPatient);
   } catch (e: unknown) {
     if (e instanceof Error) {
       resp.status(400).send(`${e.message}`);

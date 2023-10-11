@@ -1,7 +1,5 @@
-export enum Gender {
-  Male = "male",
-  Female = "female",
-}
+export const genderList = ["Male", "Female"] as const;
+export type Gender = (typeof genderList)[number];
 
 export interface Diagnosis {
   code: string;
