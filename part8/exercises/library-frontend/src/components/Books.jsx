@@ -1,27 +1,25 @@
 import { useQuery } from '@apollo/client'
 import { ALL_BOOKS } from '../queries'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const Books = ({ show }) => {
-  const [genres, setGenres] = useState([])
   const [genre, setGenre] = useState(null)
   const result = useQuery(ALL_BOOKS, { variables: genre })
+  let genres = useRef([])
 
   useEffect(() => {
     if (!result.previousData && result.data) {
-      setGenres([...new Set(result.data.allBooks.map(b => b.genres).flat())])
+      genres.current = [...new Set(result.data.allBooks.map((b) => b.genres).flat())]
     }
   }, [result])
-
-  useEffect(() => {
-    result.refetch({ genre })
-  }, [genre])
 
   if (!show) {
     return null
   }
 
-  const books = result.loading ? result.previousData.allBooks : result.data.allBooks
+  const books = result.loading
+    ? result.previousData.allBooks
+    : result.data.allBooks
 
   return (
     <div>
@@ -44,12 +42,12 @@ const Books = ({ show }) => {
         </tbody>
       </table>
       <div>
-        {genres.map((genre) => (
-          <button key={genre} onClick={() => setGenre(genre)}>
+        {genres.current.map((genre) => (
+          <button key={genre} onClick={() => result.refetch({ genre })}>
             {genre}
           </button>
         ))}
-        <button key="all" onClick={() => setGenre(null)}>
+        <button key="all" onClick={() => result.refetch({ genre: null })}>
           all
         </button>
       </div>

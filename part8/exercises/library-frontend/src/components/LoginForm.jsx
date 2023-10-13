@@ -5,6 +5,7 @@ import { LOGIN } from '../queries'
 const LoginForm = ({ show, setToken, setError, setPage }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+
   const [login, result] = useMutation(LOGIN, {
     onError: (e) => {
       setError(e.graphQLErrors.map((e) => e.message).join('\n'))
@@ -16,9 +17,6 @@ const LoginForm = ({ show, setToken, setError, setPage }) => {
       const token = result.data.login.value
       setToken(token)
       localStorage.setItem('libraryToken', token)
-    }
-    if (result.error) {
-      setError(result.error.message)
     }
   }, [result])
 
@@ -32,7 +30,10 @@ const LoginForm = ({ show, setToken, setError, setPage }) => {
     login({ variables: { username, password } })
     setUsername('')
     setPassword('')
-    setPage('books')
+
+    if (localStorage.getItem('libraryToken')) {
+      setPage('books')
+    }
   }
 
   return (
