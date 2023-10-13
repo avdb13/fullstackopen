@@ -32,7 +32,7 @@ const addPatient = (entry: NewPatient): Patient => {
   return newPatient;
 };
 
-const addPatientEntries = (patientId: string, entry: EntryWithoutId): Patient => {
+const addPatientEntries = (patientId: string, entry: EntryWithoutId): Entry => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
   const id: string = uuid();
 
@@ -43,7 +43,7 @@ const addPatientEntries = (patientId: string, entry: EntryWithoutId): Patient =>
 
   const updatedPatient = patients.find(p => p.id === patientId)!
   updatedPatient.entries.push(newEntry)
-  return updatedPatient;
+  return newEntry;
 };
 
 export default { getAllPatients, getPatient, addPatientEntries, getAllNonSensitivePatients, addPatient };

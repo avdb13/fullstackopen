@@ -1,5 +1,6 @@
 import {
   Diagnosis,
+  Entry,
   EntryFormValues,
   EntryWithoutId,
   HealthCheckEntry,
@@ -15,25 +16,7 @@ import FemaleIcon from "@mui/icons-material/Female";
 import { useState } from "react";
 import AddDiagnosisModal from "./AddDiagnosisModal";
 import patientService from "../services/patients";
-
-const submitNewEntry = (object: any) => {
-  const { patientId, ...entry } = object;
-
-  const castEntry = (entry: EntryWithoutId): EntryWithoutId => {
-    switch (entry.type) {
-      case "HealthCheck":
-        return entry as HealthCheckEntry;
-      case "OccupationalHealthcare":
-        return entry as OccupationalHealthcareEntry;
-      case "Hospital":
-        return entry as HospitalEntry;
-    }
-  };
-
-  console.log(entry);
-
-  patientService.addEntry(castEntry(entry), patientId);
-};
+import axios from "axios";
 
 const Style = {
   border: "2px solid black",
@@ -45,9 +28,11 @@ const Style = {
 const PatientPage = ({
   patient,
   diagnoses,
+  onSuccess,
 }: {
   patient: Patient;
   diagnoses: Diagnosis[];
+  onSuccess: (patientId: string, newEntry: Entry) => void;
 }) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [error, setError] = useState<string>();
@@ -58,6 +43,38 @@ const PatientPage = ({
   const closeModal = () => {
     setModalOpen(false);
     setError(undefined);
+  };
+
+  const submitNewEntry = async (object: EntryFormValues) => {
+    try {
+      const { patientId, ...entry } = object;
+
+      const castEntry = (entry: EntryWithoutId): EntryWithoutId => {
+        switch (entry.type) {
+          case "HealthCheck":
+            return entry as HealthCheckEntry;
+          case "OccupationalHealthcare":
+            return entry as OccupationalHealthcareEntry;
+          case "Hospital":
+            return entry as HospitalEntry;
+        }
+      };
+
+      const newEntry = await patientService.addEntry(castEntry(entry), patientId);
+      onSuccess(patient.id, newEntry);
+      setModalOpen(false);
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        if (e?.response?.data && typeof e?.response?.data === "string") {
+          setError(e.response.data);
+        } else if ((e?.response?.data && Array.isArray(e?.response?.data))) {
+          setError(e.response.data.map(e => e.message).join("\n"));
+        }
+      } else {
+        console.error("Unknown error", e);
+        setError("Unknown error");
+      }
+    }
   };
 
   return (

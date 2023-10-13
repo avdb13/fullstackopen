@@ -9,7 +9,7 @@ import {
 import { Button, Divider, Container, Typography } from "@mui/material";
 
 import { apiBaseUrl } from "./constants";
-import { Diagnosis, Patient } from "./types";
+import { Diagnosis, Entry, Patient } from "./types";
 
 import patientService from "./services/patients";
 import diagnoseService from "./services/diagnoses";
@@ -21,6 +21,13 @@ const App = () => {
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [patient, setPatient] = useState<Patient | null>(null);
   const match = useMatch("/:id");
+
+  const onSuccess = (patientId: string, newEntry: Entry) => {
+    const toNewPatient = (p: Patient) => ({...p, entries: [...p.entries, newEntry]});
+
+    setPatient(toNewPatient(patient!))
+    setPatients(patients.map(p => p.id === patientId ? toNewPatient(p) : p))
+  }
 
   useEffect(() => {
     void axios.get<void>(`${apiBaseUrl}/ping`);
@@ -59,7 +66,7 @@ const App = () => {
               <PatientListPage patients={patients} setPatients={setPatients} />
             }
           />
-          <Route path="/:id" element={<PatientPage patient={patient!} diagnoses={diagnoses} />} />
+          <Route path="/:id" element={<PatientPage onSuccess={onSuccess} patient={patient!} diagnoses={diagnoses} />} />
         </Routes>
       </Container>
     </div>

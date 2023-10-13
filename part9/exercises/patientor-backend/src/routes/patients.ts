@@ -32,14 +32,16 @@ router.post("/:id/entries", (req, resp) => {
       resp.status(404).send("invalid id for entry update");
     }
 
-    const newEntry = toNewEntry(req.body);
-    const updatedPatient = patientService
-      .addPatientEntries(req.params.id, newEntry);
+    const entry = toNewEntry(req.body);
+    const newEntry = patientService
+      .addPatientEntries(req.params.id, entry);
 
-    resp.status(200).send(updatedPatient);
+    resp.status(200).send(newEntry);
   } catch (e: unknown) {
     if (e instanceof Error) {
       resp.status(400).send(`${e.message}`);
+    } else {
+      resp.status(400).send(`${e}`);
     }
   }
 });

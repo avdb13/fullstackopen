@@ -7,6 +7,7 @@ import {
   Button,
   Typography,
   Slider,
+  Chip,
 } from "@mui/material";
 import { Stack } from "@mui/system";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -19,20 +20,25 @@ import {
 } from "react-hook-form";
 import { EntryFormValues, HealthCheckRating } from "../types";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 const DateField = ({ name }: { name: string }) => {
   const { control } = useFormContext();
+
+  const toDate = (s: string): Dayjs => dayjs(s, "YYYY-DD-MM");
+  const fromDate = (d: Dayjs): string => d.toISOString().slice(0, 10);
+
   return (
     <Controller
+      defaultValue={dayjs().toISOString().slice(0, 10)}
       name={name}
       control={control}
       render={({ field: { onChange, value } }) => (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             format="YYYY-DD-MM"
-            value={value || dayjs()}
-            onChange={onChange}
+            value={toDate(value)}
+            onChange={(value) => onChange(fromDate(value!))}
           />
         </LocalizationProvider>
       )}
@@ -87,9 +93,9 @@ const HealthCheckForm = () => {
       <Typography variant="h6">Healthcheck rating</Typography>
       <Stack sx={{ margin: "30px" }}>
         <Controller
-          name="HealthCheckRating"
+          name="healthCheckRating"
           control={control}
-          defaultValue={[0, 3]}
+          defaultValue={0}
           render={({ field: { onChange } }) => (
             <Slider
               step={1}
@@ -141,7 +147,7 @@ const AddDiagnosisForm = ({ onCancel, onSubmit, patientId }: Props) => {
           fullWidth
           {...methods.register("description")}
         />
-        <DateField name="date" />
+        <DateField name="date"  />
         <TextField
           label="Specialist"
           fullWidth
@@ -173,7 +179,11 @@ const AddDiagnosisForm = ({ onCancel, onSubmit, patientId }: Props) => {
                   </Button>
                 </Grid>
               </Grid>
-              <Typography variant="h6">{value.join(", ")}</Typography>
+              {value.map((s: string) => (
+                <Chip label={s} key={s} sx={{margin: 1}} onDelete={() => {
+                  onChange(value.filter((v: string) => v !== s))
+                }} />
+              ))}
             </>
           )}
         />
@@ -188,7 +198,7 @@ const AddDiagnosisForm = ({ onCancel, onSubmit, patientId }: Props) => {
                   label="Entry"
                   fullWidth
                   displayEmpty
-                  value={value || "Hospital"}
+                  value={value || ""}
                   onChange={onChange}
                 >
                   {entryOptions.map((option) => (
@@ -197,7 +207,7 @@ const AddDiagnosisForm = ({ onCancel, onSubmit, patientId }: Props) => {
                     </MenuItem>
                   ))}
                 </Select>
-                <EntryForm entry={value || "Hospital"} />
+                {value ? <EntryForm entry={value} /> : null}
               </div>
             )}
           />
