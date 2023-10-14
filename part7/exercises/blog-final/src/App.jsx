@@ -6,7 +6,6 @@ import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
 import Users from './components/Users'
-import './app.css'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   initializeBlogs,
@@ -131,8 +130,8 @@ const App = () => {
       <div>
         <h2>blogs</h2>
         <ul>
-          {[...blogs]
-            .sort((a, b) => b.likes - a.likes)
+          {blogs
+            // .sort((a, b) => b.likes - a.likes)
             .map((blog) => (
               <Blog
                 removeBlog={handleRemoveBlog}
@@ -172,33 +171,30 @@ const App = () => {
     ? users.find((u) => u.id === userMatch.params.id)
     : null
 
+  const linkStyle = 'p-2 text-grey-dark border-b-2 text-xs border-white mx-4 hover:scale-110 hover:border-indigo-500 transition'
+
   return (
     <div>
       <Notification />
-      <div style={{ backgroundColor: 'gray' }}>
-        <Link style={{ padding: 5 }} to="/">
-          home
-        </Link>
-        <Link style={{ padding: 5 }} to="/blogs">
-          blogs
-        </Link>
-        <Link style={{ padding: 5 }} to="/users">
-          users
-        </Link>
+      <div className="uppercase font-bold px-1 shadow-md flex -mb-px">
+        <Link to="/" className={linkStyle}>home</Link>
+        <Link to="/blogs" className={linkStyle}>blogs</Link>
+        <Link to="/users" className={linkStyle}>users</Link>
         {user ? (
-          <>{user.name} logged in <button onClick={handleLogout}>logout</button></>
+          <>
+            {user.name} logged in <button onClick={handleLogout}>logout</button>
+          </>
         ) : (
-          <Link style={{ padding: 5 }} to="/login">
-            login
-          </Link>
+          <Link to="/login" className={linkStyle}>login</Link>
         )}
       </div>
-
 
       <Routes>
         <Route
           path="/"
-          element={<h1>Welcome to my blog app!</h1>}
+          element={
+            <h1 className="text-3xl font-bold p-4">Welcome to my blog app!</h1>
+          }
         />
         <Route path="/blogs" element={blogList()} />
         <Route path="/login" element={loginForm()} />
