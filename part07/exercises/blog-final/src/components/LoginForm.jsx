@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import style from '../styles'
 
 const LoginForm = ({ newLogin }) => {
   const [username, setUsername] = useState('')
@@ -12,39 +13,35 @@ const LoginForm = ({ newLogin }) => {
     setUsername('')
     setPassword('')
   }
-
-  const inputStyle = 'peer placeholder-transparent border-b-2 focus:outline-none text'
-  const labelStyle = 'relative text-grey-600 transition-all text-xs -top-12 peer-placeholder-shown:-top-6 peer-placeholder-shown:text-base peer-focus:-top-12 peer-focus:text-xs'
-  const inputBoxStyle = 'p-2'
-  const buttonStyle = 'bg-indigo-500 rounded-md py-2 w-24 -left-2 text-white text-sm hover:bg-indigo-600 ease-in-out duration-200'
-
   return (
     <div>
       <h2 className='text-3xl font-bold p-4'>log in to application</h2>
-      <form className='flex-initial flex-col w-64 p-4 column shrink-1 border-solid border-2 rounded-xl' onSubmit={handleLogin}>
-        <div className={inputBoxStyle}>
+      <form className={style.form} onSubmit={handleLogin}>
+        <div className={style.inputBox}>
           <input
-            className={inputStyle}
+            className={style.input}
             placeholder='username'
             type="text"
             value={username}
             id="username"
             onChange={(event) => setUsername(event.target.value)}
           />
-          <label htmlFor='username' className={labelStyle}>username{' '}</label>
+          <label htmlFor='username' className={style.label}>username{' '}</label>
         </div>
-        <div className={inputBoxStyle}>
+        <div className={style.inputBox}>
           <input
-            className={inputStyle}
+            className={style.input}
             type="password"
             value={password}
             placeholder='password'
             id="password"
             onChange={(event) => setPassword(event.target.value)}
           />
-          <label htmlFor='password' className={labelStyle}>password{' '}</label>
+          <label htmlFor='password' className={style.label}>password{' '}</label>
         </div>
-        <button className={buttonStyle} type="submit" id="login-button">login</button>
+        <div>
+          <button className={style.button} type="submit" id="login-button">login</button>
+        </div>
       </form>
     </div>
   )
