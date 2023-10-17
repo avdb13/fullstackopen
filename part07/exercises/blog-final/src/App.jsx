@@ -15,7 +15,7 @@ import {
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
 import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
-import { Link, Navigate, Route, Routes, useMatch } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, redirect, useMatch } from 'react-router-dom'
 import userService from './services/users'
 
 const App = () => {
@@ -39,25 +39,7 @@ const App = () => {
   const blogFormRef = useRef()
 
   const handleLogin = async (credentials) => {
-    try {
-      dispatch(loginUser(credentials))
-      dispatch(newNotification({ content: 'welcome', type: 'message' }, 5000))
-    } catch (e) {
-      console.log(e)
-      e.message === 'Network Error'
-        ? dispatch(
-          newNotification({
-            content: 'backend refused connection',
-            type: 'error',
-          }),
-        )
-        : dispatch(
-          newNotification(
-            { content: 'wrong credentials', type: 'error' },
-            5000,
-          ),
-        )
-    }
+    dispatch(loginUser(credentials))
   }
 
   const handleCreateBlog = async (newBlog) => {
@@ -175,20 +157,17 @@ const App = () => {
 
   return (
     <div>
-      <Notification />
       <div className="uppercase font-bold px-1 shadow-md flex -mb-px">
         <Link to="/" className={linkStyle}>home</Link>
         <Link to="/blogs" className={linkStyle}>blogs</Link>
         <Link to="/users" className={linkStyle}>users</Link>
         {user ? (
-          <>
-            {user.name} logged in <button onClick={handleLogout}>logout</button>
-          </>
+          <a className={linkStyle} onClick={handleLogout}>logout {user.name}</a>
         ) : (
           <Link to="/login" className={linkStyle}>login</Link>
         )}
       </div>
-
+      <Notification />
       <Routes>
         <Route
           path="/"

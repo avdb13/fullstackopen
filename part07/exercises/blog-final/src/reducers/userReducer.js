@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import loginService from '../services/login'
 import registerService from '../services/register'
+import { newNotification } from './notificationReducer'
 
 const userSlice = createSlice({
   name: 'user',
@@ -16,10 +17,26 @@ const { set } = userSlice.actions
 
 export const loginUser = (credentials) => {
   return async (dispatch) => {
-    const user = await loginService.login(credentials)
-    window.localStorage.setItem('blogUser', JSON.stringify(user))
+    try {
+      const user = await loginService.login(credentials)
+      window.localStorage.setItem('blogUser', JSON.stringify(user))
+      dispatch(set(user))
+    } catch(e) {
+      e.message === 'Network Error'
+        ? dispatch(
+          newNotification({
+            content: 'backend refused connection',
+            type: 'error',
+          }, 5000),
+        )
+        : dispatch(
+          newNotification(
+            { content: 'wrong credentials', type: 'error' },
+            5000,
+          ),
+        )
+    }
 
-    dispatch(set(user))
   }
 }
 

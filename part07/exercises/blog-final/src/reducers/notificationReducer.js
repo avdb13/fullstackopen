@@ -19,4 +19,9 @@ export const newNotification = (message, timeout) => {
     setTimeout(() => dispatch(setNotification('')), timeout)
   }
 }
+
+export const notificationOnError = () => {
+
+}
+
 export const { setNotification } = notificationSlice.actions
