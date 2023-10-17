@@ -1,7 +1,6 @@
 import { useImperativeHandle } from 'react'
 import { forwardRef } from 'react'
 import { useState } from 'react'
-import styles from '../styles'
 
 const Togglable = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false)
@@ -17,14 +16,15 @@ const Togglable = forwardRef((props, ref) => {
     return { toggleVisibility }
   })
 
+  const buttonStyle = 'shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 m-4'
   return (
     <div>
       <div style={hideWhenVisible}>
-        <button className={styles.button + 'text-xs w-36'} onClick={toggleVisibility}>{props.buttonLabel}</button>
+        <button className={buttonStyle} onClick={toggleVisibility}>{props.buttonLabel}</button>
       </div>
       <div style={showWhenVisible}>
         {props.children}
-        <button className={styles.button} onClick={toggleVisibility}>cancel</button>
+        <button className={buttonStyle} onClick={toggleVisibility}>cancel</button>
       </div>
     </div>
   )
