@@ -33,6 +33,7 @@ const blogSlice = createSlice({
 export const initializeBlogs = () => {
   return async (dispatch) => {
     const blogs = await blogService.getAll()
+    console.log(blogs.map(blog => blog.comments))
     dispatch(set(blogs))
   }
 }

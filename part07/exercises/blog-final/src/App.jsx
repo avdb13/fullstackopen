@@ -160,7 +160,7 @@ const App = () => {
   const linkStyle = 'p-2 text-grey-dark border-b-2 text-xs border-white mx-4 hover:scale-110 hover:border-indigo-500 transition'
 
   return (
-    <div>
+    <div className="font-roboto">
       <div className="uppercase font-bold px-1 shadow-md flex -mb-px">
         <Link to="/" className={linkStyle}>home</Link>
         <Link to="/blogs" className={linkStyle}>blogs</Link>

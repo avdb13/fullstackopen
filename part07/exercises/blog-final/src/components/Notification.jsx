@@ -6,8 +6,8 @@ const Notification = () => {
   if (message === null) {
     return null
   }
-  const errorStyle = 'bg-red-100 border-l-4 border-red-500 text-red-400 p-4'
-  const messageStyle = 'bg-green-100 border-l-4 border-green-500 text-green-400 p-4'
+  const errorStyle = 'bg-red-100 border-l-4 border-red-500 text-red-500 p-4'
+  const messageStyle = 'bg-green-100 border-l-4 border-green-500 text-green-600 p-4'
 
   switch (message.type) {
   case 'error':
