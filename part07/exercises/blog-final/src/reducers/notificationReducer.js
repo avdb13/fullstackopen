@@ -20,8 +20,13 @@ export const newNotification = (message, timeout) => {
   }
 }
 
-export const notificationOnError = () => {
-
+export const notificationOnError = (f, onSuccess, onError) => {
+  try {
+    f()
+    onSuccess()
+  } catch(e) {
+    onError()
+  }
 }
 
 export const { setNotification } = notificationSlice.actions

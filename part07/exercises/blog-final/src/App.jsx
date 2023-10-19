@@ -15,7 +15,7 @@ import {
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
 import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
-import { Link, Navigate, Route, Routes, redirect, useMatch } from 'react-router-dom'
+import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom'
 import userService from './services/users'
 
 const App = () => {
@@ -23,6 +23,7 @@ const App = () => {
   const [users, setUsers] = useState(null)
   const blogs = useSelector((state) => state.blogs)
   const user = useSelector((state) => state.user)
+  const navigate = useNavigate()
 
   useEffect(() => {
     userService.getAll().then((users) => setUsers(users))
@@ -39,7 +40,9 @@ const App = () => {
   const blogFormRef = useRef()
 
   const handleLogin = async (credentials) => {
-    dispatch(loginUser(credentials))
+    const ret = dispatch(loginUser(credentials))
+    console.log(ret)
+    navigate('/blogs')
   }
 
   const handleCreateBlog = async (newBlog) => {
@@ -105,15 +108,16 @@ const App = () => {
 
   const handleLogout = async () => {
     dispatch(resetUser())
+    navigate('/login')
   }
 
   const blogList = () => {
     return (
       <div>
-        <h2>blogs</h2>
-        <ul>
-          {blogs
-            // .sort((a, b) => b.likes - a.likes)
+        <h2 className='text-3xl font-bold p-4'>blogs</h2>
+        <ul className='flex flex-col'>
+          {[...blogs]
+            .sort((a, b) => b.likes - a.likes)
             .map((blog) => (
               <Blog
                 removeBlog={handleRemoveBlog}
