@@ -1,19 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit'
 import loginService from '../services/login'
 import registerService from '../services/register'
+import userService from '../services/users'
 import { newNotification } from './notificationReducer'
 
-const userSlice = createSlice({
-  name: 'user',
-  initialState: null,
+const usersSlice = createSlice({
+  name: 'users',
+  initialState: ({ me: null, all: [] }),
   reducers: {
     set(state, action) {
-      return action.payload
+      return ({ ...state, me: action.payload })
+    },
+    setAll(state, action) {
+      return ({ ...state, all: action.payload })
     }
   }
 })
 
-const { set } = userSlice.actions
+const { set, setAll } = usersSlice.actions
 
 export const loginUser = (credentials) => {
   return async (dispatch) => {
@@ -64,4 +68,11 @@ export const registerUser = ({ username, name, password }) => {
   }
 }
 
-export default userSlice.reducer
+export const initializeUsers = () => {
+  return async (dispatch) => {
+    const users = await userService.getAll()
+    dispatch(setAll(users))
+  }
+}
+
+export default usersSlice.reducer

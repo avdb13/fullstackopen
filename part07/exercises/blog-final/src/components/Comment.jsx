@@ -13,9 +13,7 @@ const Comment = ({ comment }) => (
       </div>
       <p className='text-sm text-gray-500'>{dayjs(comment.added).fromNow()}</p>
     </div>
-    <div>
-    </div>
-    <p>{comment.body}</p>
+    <p className='px-2 text-xs'>{comment.body}</p>
   </li>
 )
 

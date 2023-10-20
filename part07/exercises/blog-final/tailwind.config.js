@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'roboto': ['Roboto', 'sans-serif']
+        'quicksand': ['Quicksand', 'sans-serif']
       }
     },
   },

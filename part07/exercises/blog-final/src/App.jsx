@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import UserBlogs from './components/UserBlogs'
 import Blog from './components/Blog'
 import Togglable from './components/Togglable'
@@ -14,26 +14,19 @@ import {
   removeBlog,
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
-import { loginUser, autoLoginUser, resetUser } from './reducers/userReducer'
+import { loginUser, autoLoginUser, resetUser, initializeUsers } from './reducers/userReducer'
 import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom'
-import userService from './services/users'
 
 const App = () => {
   const dispatch = useDispatch()
-  const [users, setUsers] = useState(null)
   const blogs = useSelector((state) => state.blogs)
-  const user = useSelector((state) => state.user)
+  const users = useSelector((state) => state.users.all)
+  const user = useSelector((state) => state.users.me)
   const navigate = useNavigate()
 
   useEffect(() => {
-    userService.getAll().then((users) => setUsers(users))
-  }, [])
-
-  useEffect(() => {
+    dispatch(initializeUsers())
     dispatch(initializeBlogs())
-  }, [])
-
-  useEffect(() => {
     dispatch(autoLoginUser())
   }, [])
 
@@ -41,7 +34,6 @@ const App = () => {
 
   const handleLogin = async (credentials) => {
     const ret = dispatch(loginUser(credentials))
-    console.log(ret)
     navigate('/blogs')
   }
 
@@ -80,7 +72,6 @@ const App = () => {
     try {
       dispatch(removeBlog(id)).catch(() => dispatch(resetUser()))
     } catch (e) {
-      console.log(e)
       const { error } = e.response.data
 
       dispatch(newNotification({ content: error, type: 'error' }, 5000))
@@ -108,7 +99,6 @@ const App = () => {
     navigate('/login')
   }
 
-  console.log([...blogs].sort((a, b) => b.likes - a.likes))
   const blogList = () => {
     return (
       <div>
@@ -159,7 +149,7 @@ const App = () => {
     'p-2 text-grey-dark border-b-2 text-xs border-white mx-4 hover:scale-110 hover:border-indigo-500 transition'
 
   return (
-    <div className="font-roboto">
+    <div className="font-quicksand font-semibold text-gray-700">
       <div className="uppercase font-bold px-1 shadow-md flex -mb-px">
         <Link to="/" className={linkStyle}>
           home
@@ -194,11 +184,13 @@ const App = () => {
         <Route
           path="/blogs/:id"
           element={
-            <Blog
-              blog={matchBlog}
-              addLike={handleLikeBlog}
-              removeBlog={handleRemoveBlog}
-            />
+            <div className='flex flex-col py-4'>
+              <Blog
+                blog={matchBlog}
+                addLike={handleLikeBlog}
+                removeBlog={handleRemoveBlog}
+              />
+            </div>
           }
         />
         <Route path="/users/:id" element={<UserBlogs user={matchUser} />} />
