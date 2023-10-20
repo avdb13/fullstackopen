@@ -18,11 +18,9 @@ const Blog = ({ blog, removeBlog, addLike }) => {
 
   const handleAddComment = (e) => {
     e.preventDefault()
-    const comment = e.target.comment.value
+    const body = e.target.comment.value
     e.target.comment.value = ''
-
-    console.log(blog, comment)
-    dispatch(commentBlog(blog, comment))
+    dispatch(commentBlog(body))
   }
 
   const blogStyle = 'relative mx-4 my-2 p-2 max-w-md bg-white shadow-sm ring-2 ring-purple-300 rounded'
@@ -81,7 +79,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
             {blog.comments.map(comment => <Comment key={comment._id} comment={comment} />)}
           </ul>
           <form onSubmit={handleAddComment} className={flexStyle}>
-            <input type='text' name='comment' className="grow py-1 text-center rounded focus:-border-1 bg-slate-100" />
+            <input type='text' name='comment' className="grow py-1 text-center rounded focus:outline-none focus:-border-1 bg-slate-100" />
             <button className={buttonStyle} type='submit'>add comment</button>
           </form>
         </div>

@@ -67,17 +67,23 @@ blogRouter.post("/:id/comments", async (req, resp, next) => {
 blogRouter.post("/:id/like", async (req, resp, next) => {
   const id = req.params.id;
 
-  const updatedBlog = await Blog.findByIdAndUpdate(
-    id,
-    { $inc: { likes: 1 } },
-    {
-      runValidators: true,
-      new: true,
-      context: "query",
-    },
-  );
+  try {
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      { $inc: { likes: 1 } },
+      {
+        runValidators: true,
+        new: true,
+        upsert: true,
+        context: "query",
+      },
+    );
 
-  resp.status(201).json(updatedBlog);
+    resp.status(201).json(updatedBlog);
+  } catch(e) {
+    resp.status(400).json({ error: "unknown blog id" });
+  }
+
 });
 
 blogRouter.put("/:id", async (req, resp, next) => {

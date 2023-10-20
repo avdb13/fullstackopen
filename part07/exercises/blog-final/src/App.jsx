@@ -89,16 +89,13 @@ const App = () => {
 
   const handleLikeBlog = async (blog) => {
     try {
-      dispatch(likeBlog(blog))
-        .then(() => {
-          dispatch(
-            newNotification(
-              { content: `you liked ${blog.title}`, type: 'message' },
-              5000,
-            ),
-          )
-        })
-        .catch(() => dispatch(resetUser()))
+      dispatch(likeBlog(blog.id))
+      dispatch(
+        newNotification(
+          { content: `you liked ${blog.title}`, type: 'message' },
+          5000,
+        ),
+      )
     } catch (e) {
       dispatch(
         newNotification({ content: e.response.data, type: 'message' }, 5000),
@@ -111,11 +108,12 @@ const App = () => {
     navigate('/login')
   }
 
+  console.log([...blogs].sort((a, b) => b.likes - a.likes))
   const blogList = () => {
     return (
       <div>
-        <h2 className='text-3xl font-bold p-4'>blogs</h2>
-        <ul className='flex flex-col'>
+        <h2 className="text-3xl font-bold p-4">blogs</h2>
+        <ul className="flex flex-col">
           {[...blogs]
             .sort((a, b) => b.likes - a.likes)
             .map((blog) => (
@@ -157,18 +155,29 @@ const App = () => {
     ? users.find((u) => u.id === userMatch.params.id)
     : null
 
-  const linkStyle = 'p-2 text-grey-dark border-b-2 text-xs border-white mx-4 hover:scale-110 hover:border-indigo-500 transition'
+  const linkStyle =
+    'p-2 text-grey-dark border-b-2 text-xs border-white mx-4 hover:scale-110 hover:border-indigo-500 transition'
 
   return (
     <div className="font-roboto">
       <div className="uppercase font-bold px-1 shadow-md flex -mb-px">
-        <Link to="/" className={linkStyle}>home</Link>
-        <Link to="/blogs" className={linkStyle}>blogs</Link>
-        <Link to="/users" className={linkStyle}>users</Link>
+        <Link to="/" className={linkStyle}>
+          home
+        </Link>
+        <Link to="/blogs" className={linkStyle}>
+          blogs
+        </Link>
+        <Link to="/users" className={linkStyle}>
+          users
+        </Link>
         {user ? (
-          <a className={linkStyle} onClick={handleLogout}>logout {user.name}</a>
+          <a className={linkStyle} onClick={handleLogout}>
+            logout {user.name}
+          </a>
         ) : (
-          <Link to="/login" className={linkStyle}>login</Link>
+          <Link to="/login" className={linkStyle}>
+            login
+          </Link>
         )}
       </div>
       <Notification />

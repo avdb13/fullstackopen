@@ -24,7 +24,11 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   author: String,
-  likes: Number,
+  likes: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   comments: {
     type: [commentSchema],
     required: true,

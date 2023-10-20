@@ -18,6 +18,7 @@ const create = async (blog, token) => {
   return resp.data
 }
 
+// shouldn't be used in normal circumstances
 const update = async (newBlog) => {
   const { user, id } = newBlog
   newBlog.user = user.id
@@ -32,6 +33,12 @@ const comment = async (id, comment) => {
   return resp.data
 }
 
+const like = async (id) => {
+  const resp = await axios.post(`${baseUrl}/${id}/like`, {})
+  console.log(resp.data)
+  return resp.data
+}
+
 const remove = async (id, token) => {
   const config = {
     headers: { Authorization: formatToken(token) }
@@ -40,4 +47,4 @@ const remove = async (id, token) => {
   await axios.delete(`${baseUrl}/${id}`, config)
 }
 
-export default { getAll, create, update, comment, remove }
+export default { getAll, create, like, comment, remove }
