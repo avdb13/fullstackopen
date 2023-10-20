@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const _ = require("express-async-errors");
 const blogRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
@@ -11,8 +12,11 @@ blogRouter.get("/", async (req, resp) => {
 });
 
 blogRouter.get("/:id", async (req, resp) => {
-  const id = req.params.id
-  const blog = await Blog.findById(id).populate("user", { username: 1, name: 1 });
+  const id = req.params.id;
+  const blog = await Blog.findById(id).populate("user", {
+    username: 1,
+    name: 1,
+  });
 
   resp.json(blog);
 });
@@ -39,12 +43,33 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
 
 blogRouter.post("/:id/comments", async (req, resp, next) => {
   const id = req.params.id;
-  const { comment } = req.body;
-  const blog = await Blog.findById(id)
+  const comment = req.body;
+
+  console.log(comment)
+  if (!comment || !comment.added || !comment.body) {
+    resp.status(400).json({ error: "malformed body" });
+    return;
+  }
 
   const updatedBlog = await Blog.findByIdAndUpdate(
     id,
-    { $push: {"comments": comment} },
+    { $push: { comments: comment } },
+    {
+      runValidators: true,
+      new: true,
+      context: "query",
+    },
+  );
+
+  resp.status(201).json(updatedBlog);
+});
+
+blogRouter.post("/:id/like", async (req, resp, next) => {
+  const id = req.params.id;
+
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    id,
+    { $inc: { likes: 1 } },
     {
       runValidators: true,
       new: true,
@@ -59,15 +84,11 @@ blogRouter.put("/:id", async (req, resp, next) => {
   const id = req.params.id;
   const blog = req.body;
 
-  const updatedBlog = await Blog.findByIdAndUpdate(
-    id,
-    blog,
-    {
-      runValidators: true,
-      new: true,
-      context: "query",
-    },
-  );
+  const updatedBlog = await Blog.findByIdAndUpdate(id, blog, {
+    runValidators: true,
+    new: true,
+    context: "query",
+  });
 
   resp.json(updatedBlog);
 });
