@@ -74,8 +74,8 @@ const Blog = ({ blog, removeBlog, addLike }) => {
           </div>
         </div>
         <div>
-          <h3>comments</h3>
-          <ul className='w-full'>
+          <h3 className='text-xl font-semibold text-gray-600 pt-4'>comments</h3>
+          <ul className='w-full [&>*:not(:last-child)]:border-b-2 [&>*]:m-2'>
             {blog.comments.map(comment => <Comment key={comment._id} comment={comment} />)}
           </ul>
           <form onSubmit={handleAddComment} className={flexStyle}>
