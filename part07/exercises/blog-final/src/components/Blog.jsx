@@ -20,21 +20,20 @@ const Blog = ({ blog, removeBlog, addLike }) => {
     e.preventDefault()
     const body = e.target.comment.value
     e.target.comment.value = ''
-    dispatch(commentBlog(body))
+    dispatch(commentBlog(blog.id, body))
   }
 
-  const blogStyle = 'relative mx-4 my-2 p-2 max-w-md bg-white shadow-sm ring-2 ring-purple-300 rounded'
+  const blogStyle = 'relative mx-4 my-2 p-2 max-w-md bg-white shadow-sm ring-2 ring-purple-300 rounded pb-4'
   const flexStyle = 'flex flex-shrink place-items-center flex-wrap justify-between'
   const gradient = 'absolute mx-4 my-2 blur -inset-0 max-w-md transition absolute bg-gradient-to-r from-indigo-400 to-purple-400 opacity-10 group-hover:opacity-50'
   const buttonStyle = 'shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 m-2'
-  const likeStyle = 'flex justify-center m-1 rounded-full'
 
 
   const compactView = () => (
-    <div key={blog.id} className="relative group">
+    <div key={blog.id} className="relative group list-none">
       <div className={gradient}></div>
       <div className={blogStyle + ' ' + flexStyle}>
-        <a className='basis-1/2 text-xl font-semibold text-gray-600' href={blog.url}>{blog.title}</a>
+        <a className='basis-1/2 text-xl font-semibold text-gray-600 whitespace-nowrap' href={blog.url}>{blog.title}</a>
         <button className={buttonStyle} onClick={() => setShowAll(true)}>show</button>
         <p className='basis-1/2 text-xs'>by {blog.author}</p>
       </div>
@@ -42,11 +41,11 @@ const Blog = ({ blog, removeBlog, addLike }) => {
   )
 
   const fullView = () => (
-    <li key={blog.id} className="relative group">
+    <li key={blog.id} className="relative group list-none">
       <div className={gradient}></div>
       <div className={blogStyle}>
         <div className={flexStyle}>
-          <h2 className='basis-1/2 text-xl font-semibold text-gray-600'>
+          <h2 className='basis-1/2 text-xl font-semibold text-gray-600 whitespace-nowrap'>
             {blog.title}
           </h2>
           <button className={buttonStyle} onClick={() => setShowAll(false)}>hide</button>

@@ -43,18 +43,17 @@ export const createBlog = (blog) => {
 export const likeBlog = (id) => {
   return async (dispatch, getState) => {
     // in case we want authentication
-    let token = getState().user.token
+    // let token = getState().user.token
 
     const newBlog = await blogService.like(id)
-    console.log(newBlog)
     dispatch(update(newBlog))
   }
 }
 
 // clean this up later to only update the comment field
-export const commentBlog = (body) => {
+export const commentBlog = (id, body) => {
   return async (dispatch, getState) => {
-    const newBlog = await blogService.comment({ body, added: new Date().toISOString() })
+    const newBlog = await blogService.comment(id, body)
     dispatch(update(newBlog))
   }
 }

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import notificationReducer from './notificationReducer'
 import blogReducer from './blogReducer'
-import userReducer, { resetUser } from './userReducer'
+import usersReducer, { resetUser } from './userReducer'
 
 const handleError = store => next => action => {
   const state = store.getState()
@@ -22,7 +22,7 @@ const store = configureStore({
   reducer: {
     notification: notificationReducer,
     blogs: blogReducer,
-    user: userReducer,
+    users: usersReducer,
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware().concat(handleError)
 })

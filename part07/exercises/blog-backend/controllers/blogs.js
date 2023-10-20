@@ -43,17 +43,18 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
 
 blogRouter.post("/:id/comments", async (req, resp, next) => {
   const id = req.params.id;
-  const comment = req.body;
+  const { body } = req.body;
+  console.log(req.body)
 
-  console.log(comment)
-  if (!comment || !comment.added || !comment.body) {
+  if (!body) {
     resp.status(400).json({ error: "malformed body" });
     return;
   }
 
+  const newComment = { body, added: new Date() }
   const updatedBlog = await Blog.findByIdAndUpdate(
     id,
-    { $push: { comments: comment } },
+    { $push: { comments: newComment } },
     {
       runValidators: true,
       new: true,
