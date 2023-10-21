@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useSelector } from 'react-redux'
 const baseUrl = 'http://localhost:3000/api/blogs'
 
 const formatToken = (token) => `Bearer ${token}`
@@ -18,19 +17,12 @@ const create = async (blog, token) => {
   return resp.data
 }
 
-// shouldn't be used in normal circumstances
-const update = async (newBlog) => {
-  const { user, id } = newBlog
-  newBlog.user = user.id
-  delete newBlog.id
+const comment = async (id, body, token) => {
+  const config = token ? {
+    headers: { Authorization: formatToken(token) }
+  } : null
 
-  const resp = await axios.put(`${baseUrl}/${id}`, newBlog)
-  return { ...resp.data, user, id }
-}
-
-const comment = async (id, body) => {
-  console.log(id, body)
-  const resp = await axios.post(`${baseUrl}/${id}/comments`, { body })
+  const resp = await axios.post(`${baseUrl}/${id}/comments`, { body }, config)
   return resp.data
 }
 

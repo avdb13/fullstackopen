@@ -22,12 +22,15 @@ const { set, setAll } = usersSlice.actions
 export const loginUser = (credentials, redirect) => {
   return async (dispatch) => {
     try {
+      window.localStorage.removeItem('blogUser')
+      dispatch(set(''))
+
       const user = await loginService.login(credentials)
       window.localStorage.setItem('blogUser', JSON.stringify(user))
       dispatch(set(user))
       redirect()
     } catch(e) {
-      dispatch(onError(e, 'wrong credentials'))
+      dispatch(onError('wrong credentials'))
     }
 
   }

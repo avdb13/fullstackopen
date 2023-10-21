@@ -1,5 +1,6 @@
 import { onSuccess, onError } from './errorHandler'
 import blogService from '../services/blogs'
+import { resetUser } from './usersReducer'
 import { createSlice } from '@reduxjs/toolkit'
 
 const blogSlice = createSlice({
@@ -15,6 +16,11 @@ const blogSlice = createSlice({
     update(state, action) {
       return state.map((b) =>
         b.id === action.payload.id ? action.payload : b,
+      )
+    },
+    addComment(state, action) {
+      return state.map((b) =>
+        b.id === action.payload.id ? ({ ...b, comments: [...b.comments, action.payload.comment] }) : b,
       )
     },
     remove(state, action) {
@@ -42,7 +48,7 @@ export const createBlog = (blog) => {
         onSuccess(`${newBlog.title} by ${newBlog.author} was added`)
       )
     } catch(e) {
-      dispatch(onError(e, 'wrong credentials'))
+      dispatch(onError('wrong credentials'))
     }
   }
 }
@@ -60,8 +66,15 @@ export const likeBlog = (id, title) => {
 
 export const commentBlog = (id, body) => {
   return async (dispatch, getState) => {
-    const newBlog = await blogService.comment(id, body)
-    dispatch(update(newBlog))
+    const token = getState().users.me ? getState().users.me.token : null
+
+    try {
+      const comment = await blogService.comment(id, body, token)
+      dispatch(addComment({ comment, id }))
+    } catch(e) {
+      dispatch(onError('please login again'))
+      resetUser()
+    }
   }
 }
 
@@ -73,10 +86,10 @@ export const removeBlog = (id) => {
       await blogService.remove(id, token)
       dispatch(remove(id))
     } catch(e) {
-      dispatch(onError(e, e.response.data))
+      dispatch(onError('you can only delete your own blogs'))
     }
   }
 }
 
-const { set, append, update, remove } = blogSlice.actions
+const { set, append, addComment, update, remove } = blogSlice.actions
 export default blogSlice.reducer
