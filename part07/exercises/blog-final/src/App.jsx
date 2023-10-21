@@ -14,7 +14,7 @@ import {
   removeBlog,
 } from './reducers/blogReducer'
 import { newNotification } from './reducers/notificationReducer'
-import { loginUser, autoLoginUser, resetUser, initializeUsers } from './reducers/userReducer'
+import { loginUser, autoLoginUser, resetUser, initializeUsers } from './reducers/usersReducer'
 import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom'
 
 const App = () => {
@@ -33,49 +33,16 @@ const App = () => {
   const blogFormRef = useRef()
 
   const handleLogin = async (credentials) => {
-    const ret = dispatch(loginUser(credentials))
-    navigate('/blogs')
+    dispatch(loginUser(credentials, () => navigate('/blogs')))
   }
 
   const handleCreateBlog = async (newBlog) => {
     blogFormRef.current.toggleVisibility()
-
-    try {
-      dispatch(createBlog(newBlog))
-        .then(() => {
-          const content = `${newBlog.title} by ${newBlog.author} was added`
-          dispatch(
-            newNotification(
-              {
-                content,
-                type: 'message',
-              },
-              5000,
-            ),
-          )
-        })
-        .catch(() => dispatch(resetUser()))
-    } catch (e) {
-      dispatch(
-        newNotification(
-          {
-            content: e.response.data,
-            type: 'error',
-          },
-          5000,
-        ),
-      )
-    }
+    dispatch(createBlog(newBlog))
   }
 
   const handleRemoveBlog = async (id) => {
-    try {
-      dispatch(removeBlog(id)).catch(() => dispatch(resetUser()))
-    } catch (e) {
-      const { error } = e.response.data
-
-      dispatch(newNotification({ content: error, type: 'error' }, 5000))
-    }
+    dispatch(removeBlog(id))
   }
 
   const handleLikeBlog = async (blog) => {

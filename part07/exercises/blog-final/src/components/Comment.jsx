@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import UserSvg from './User'
+import AnonymousSvg from './svgs/User'
+import UserSvg from './svgs/User'
 
 dayjs.extend(relativeTime)
 

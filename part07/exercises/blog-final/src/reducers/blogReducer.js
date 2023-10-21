@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux'
+import { onSuccess, onError } from './errorHandler'
 import blogService from '../services/blogs'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -26,7 +26,6 @@ const blogSlice = createSlice({
 export const initializeBlogs = () => {
   return async (dispatch) => {
     const blogs = await blogService.getAll()
-    console.log(blogs.map(blog => blog.comments))
     dispatch(set(blogs))
   }
 }
@@ -35,8 +34,16 @@ export const createBlog = (blog) => {
   return async (dispatch, getState) => {
     let token = getState().user.token
 
-    const newBlog = await blogService.create(blog, token)
-    dispatch(append(newBlog))
+    try {
+      const newBlog = await blogService.create(blog, token)
+
+      dispatch(append(newBlog))
+      dispatch(
+        onSuccess(`${newBlog.title} by ${newBlog.author} was added`)
+      )
+    } catch(e) {
+      dispatch(onError(e, 'wrong credentials'))
+    }
   }
 }
 
@@ -50,7 +57,6 @@ export const likeBlog = (id) => {
   }
 }
 
-// clean this up later to only update the comment field
 export const commentBlog = (id, body) => {
   return async (dispatch, getState) => {
     const newBlog = await blogService.comment(id, body)
@@ -62,8 +68,12 @@ export const removeBlog = (id) => {
   return async (dispatch, getState) => {
     let token = getState().user.token
 
-    await blogService.remove(id, token)
-    dispatch(remove(id))
+    try {
+      await blogService.remove(id, token)
+      dispatch(remove(id))
+    } catch(e) {
+      dispatch(onError(e, e.response.data))
+    }
   }
 }
 

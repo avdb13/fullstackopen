@@ -1,12 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
 import notificationReducer from './notificationReducer'
 import blogReducer from './blogReducer'
-import usersReducer, { resetUser } from './userReducer'
+import usersReducer, { resetUser } from './usersReducer'
 
 const handleError = store => next => action => {
   const state = store.getState()
-  // console.log(state)
-  // console.log(action)
 
   try {
     next(action)
