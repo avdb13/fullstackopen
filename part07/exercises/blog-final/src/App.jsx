@@ -13,7 +13,6 @@ import {
   likeBlog,
   removeBlog,
 } from './reducers/blogReducer'
-import { newNotification } from './reducers/notificationReducer'
 import { loginUser, autoLoginUser, resetUser, initializeUsers } from './reducers/usersReducer'
 import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom'
 
@@ -46,19 +45,7 @@ const App = () => {
   }
 
   const handleLikeBlog = async (blog) => {
-    try {
-      dispatch(likeBlog(blog.id))
-      dispatch(
-        newNotification(
-          { content: `you liked ${blog.title}`, type: 'message' },
-          5000,
-        ),
-      )
-    } catch (e) {
-      dispatch(
-        newNotification({ content: e.response.data, type: 'message' }, 5000),
-      )
-    }
+    dispatch(likeBlog(blog.id, blog.title))
   }
 
   const handleLogout = async () => {

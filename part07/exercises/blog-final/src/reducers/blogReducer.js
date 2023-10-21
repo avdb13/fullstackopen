@@ -47,13 +47,14 @@ export const createBlog = (blog) => {
   }
 }
 
-export const likeBlog = (id) => {
+export const likeBlog = (id, title) => {
   return async (dispatch, getState) => {
     // in case we want authentication
     // let token = getState().user.token
 
     const newBlog = await blogService.like(id)
     dispatch(update(newBlog))
+    dispatch(onSuccess(`you liked ${title}`))
   }
 }
 
