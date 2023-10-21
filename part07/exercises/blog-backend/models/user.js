@@ -22,6 +22,7 @@ userSchema.plugin(mongooseUniqueValidator);
 
 userSchema.set("toJSON", {
   transform: (document, retObject) => {
+    console.log("user transform", retObject)
     retObject.id = retObject._id.toString();
     delete retObject._id;
     delete retObject.__v;

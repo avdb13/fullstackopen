@@ -11,6 +11,12 @@ const commentSchema = new mongoose.Schema({
   added: {
     type: mongoose.Schema.Types.Date,
     default: new Date(),
+  },
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
+    default: null,
   }
 })
 
@@ -40,6 +46,14 @@ const blogSchema = new mongoose.Schema({
 });
 
 blogSchema.set("toJSON", {
+  transform: (document, retObject) => {
+    retObject.id = retObject._id.toString();
+    delete retObject._id;
+    delete retObject.__v;
+  },
+});
+
+commentSchema.set("toJSON", {
   transform: (document, retObject) => {
     retObject.id = retObject._id.toString();
     delete retObject._id;

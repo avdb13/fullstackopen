@@ -34,8 +34,13 @@ const errorHandler = (err, req, resp, next) => {
 const userExtractor = async (req, resp, next) => {
   const auth = req.get("Authorization");
 
-  if (!(auth && auth.startsWith("Bearer "))) {
-    resp.status(401).json({ error: "missing bearer token" });
+  if (!auth) {
+    return next();
+  }
+
+  if (!auth.startsWith("Bearer ")) {
+    resp.status(401).json({ error: "malformed bearer token" });
+    return;
   }
 
   const token = auth.replace("Bearer ", "");
@@ -43,8 +48,10 @@ const userExtractor = async (req, resp, next) => {
 
   if (!decodedToken.id) {
     resp.status(401).json({ error: "invalid bearer token" });
+    return;
   }
 
+  console.log("here sir")
   const user = await User.findById(decodedToken.id);
   req.user = user._id.toString();
 
