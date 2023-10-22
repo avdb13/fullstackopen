@@ -13,7 +13,12 @@ import {
   likeBlog,
   removeBlog,
 } from './reducers/blogReducer'
-import { loginUser, autoLoginUser, resetUser, initializeUsers } from './reducers/usersReducer'
+import {
+  loginUser,
+  autoLoginUser,
+  resetUser,
+  initializeUsers,
+} from './reducers/usersReducer'
 import { Link, Route, Routes, useMatch, useNavigate } from 'react-router-dom'
 
 const App = () => {
@@ -29,15 +34,9 @@ const App = () => {
     dispatch(autoLoginUser())
   }, [])
 
-  const blogFormRef = useRef()
-
+  // would be nice if we could redirect the user to the login page on every jwt error
   const handleLogin = async (credentials) => {
     dispatch(loginUser(credentials, () => navigate('/blogs')))
-  }
-
-  const handleCreateBlog = async (newBlog) => {
-    blogFormRef.current.toggleVisibility()
-    dispatch(createBlog(newBlog))
   }
 
   const handleRemoveBlog = async (id) => {
@@ -57,6 +56,7 @@ const App = () => {
     return (
       <div>
         <h2 className="text-3xl font-bold p-4">blogs</h2>
+        {user ? blogForm() : null}
         <ul className="flex flex-col">
           {[...blogs]
             .sort((a, b) => b.likes - a.likes)
@@ -73,6 +73,17 @@ const App = () => {
     )
   }
 
+  const createButton = () => (
+    <button
+      type="submit"
+      form="blogForm"
+      id="create-button"
+      className="transition-all bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 my-4 ml-4"
+    >
+      create
+    </button>
+  )
+
   const loginForm = () => {
     return (
       <Togglable buttonLabel="show login form">
@@ -83,8 +94,8 @@ const App = () => {
 
   const blogForm = () => {
     return (
-      <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={handleCreateBlog} />
+      <Togglable buttonLabel="create new blog" button={createButton()}>
+        <BlogForm />
       </Togglable>
     )
   }
@@ -138,7 +149,7 @@ const App = () => {
         <Route
           path="/blogs/:id"
           element={
-            <div className='flex flex-col py-4'>
+            <div className="flex flex-col py-4">
               <Blog
                 blog={matchBlog}
                 addLike={handleLikeBlog}

@@ -5,7 +5,7 @@ import Comment from '../components/Comment'
 
 const Blog = ({ blog, removeBlog, addLike }) => {
   const dispatch = useDispatch()
-  const user = useSelector((state) => state.user)
+  const user = useSelector((state) => state.users.me)
   const [showAll, setShowAll] = useState(false)
 
   if (!blog) return <div>this blog does not exist anymore!</div>
@@ -30,7 +30,7 @@ const Blog = ({ blog, removeBlog, addLike }) => {
   const gradient =
     'absolute mx-4 my-2 blur -inset-0 max-w-md transition absolute bg-gradient-to-r from-indigo-400 to-purple-400 opacity-10 group-hover:opacity-50'
   const buttonStyle =
-    'shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 m-2'
+    'transition-all bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 m-2'
 
   const compactView = () => (
     <div key={blog.id} className="relative group list-none">

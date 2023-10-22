@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const _ = require("express-async-errors");
 const blogRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
@@ -74,14 +75,14 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
 
 blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
-  const body = req.body;
+  const { body } = req.body;
 
-  if (!body.body) {
+  if (!body) {
     resp.status(400).json({ error: "missing fields" });
     return;
   }
 
-  if (!(body.body instanceof String || typeof body.body === 'string')) {
+  if (!(body instanceof String || typeof body === 'string')) {
     resp.status(400).json({ error: "body must be string" });
     return;
   }
@@ -105,7 +106,8 @@ blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
     // silly hack to get the latest commment
     resp.status(201).json(comments[comments.length - 1]);
   } catch(e) {
-    resp.status(404).json({ error: e.message });
+    console.log(e)
+    resp.status(400).json({ error: e.message });
   }
 
 });

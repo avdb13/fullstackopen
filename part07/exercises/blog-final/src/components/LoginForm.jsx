@@ -20,7 +20,7 @@ const LoginForm = ({ newLogin }) => {
   return (
     <div>
       <h2 className='text-3xl font-bold p-4'>log in to application</h2>
-      <form className='flex flex-col w-96 p-4 m-4 border-2 mb-2' onSubmit={handleLogin}>
+      <form className='flex flex-col w-96 p-4 m-4 border-2 mb-2 focus:outline-none' onSubmit={handleLogin}>
         <div className={inputBoxStyle}>
           <label htmlFor='username' className={labelStyle}>username{' '}</label>
           <input

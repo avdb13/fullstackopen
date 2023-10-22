@@ -38,7 +38,7 @@ export const initializeBlogs = () => {
 
 export const createBlog = (blog) => {
   return async (dispatch, getState) => {
-    let token = getState().user.token
+    let token = getState().users.me.token
 
     try {
       const newBlog = await blogService.create(blog, token)
@@ -72,6 +72,7 @@ export const commentBlog = (id, body) => {
       const comment = await blogService.comment(id, body, token)
       dispatch(addComment({ comment, id }))
     } catch(e) {
+      console.log(e)
       dispatch(onError('please login again'))
       resetUser()
     }

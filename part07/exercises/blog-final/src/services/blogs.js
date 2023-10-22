@@ -13,6 +13,7 @@ const create = async (blog, token) => {
     headers: { Authorization: formatToken(token) }
   }
 
+  console.log(blog)
   const resp = await axios.post(baseUrl, blog, config)
   return resp.data
 }

@@ -1,4 +1,3 @@
-const _ = require("express-async-errors");
 const helmet = require("helmet");
 const config = require("./utils/config");
 const logger = require("./utils/logger");
@@ -11,7 +10,6 @@ const middleware = require("./utils/middleware");
 const cors = require("cors");
 const express = require("express");
 const bodyParserErrorHandler = require("express-body-parser-error-handler");
-const morgan = require("morgan");
 const mongoose = require("mongoose");
 const app = express();
 
