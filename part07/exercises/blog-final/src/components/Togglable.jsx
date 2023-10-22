@@ -28,8 +28,13 @@ const Togglable = forwardRef((props, ref) => {
       </div>
       <div style={showWhenVisible}>
         {props.children}
-        <div>
-          {props.button}
+        <div className='flex'>
+          <button
+            className={buttonStyle}
+            form={props.form}
+          >
+            {props.confirmLabel}
+          </button>
           <button
             className={buttonStyle + ' bg-red-500 hover:bg-red-400'}
             onClick={toggleVisibility}

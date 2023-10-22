@@ -48,7 +48,7 @@ export const createBlog = (blog) => {
         onSuccess(`${newBlog.title} by ${newBlog.author} was added`)
       )
     } catch(e) {
-      dispatch(onError('wrong credentials'))
+      dispatch(onError('please login again'))
     }
   }
 }

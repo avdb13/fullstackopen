@@ -73,20 +73,9 @@ const App = () => {
     )
   }
 
-  const createButton = () => (
-    <button
-      type="submit"
-      form="blogForm"
-      id="create-button"
-      className="transition-all bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none font-bold rounded text-white py-1 px-4 my-4 ml-4"
-    >
-      create
-    </button>
-  )
-
   const loginForm = () => {
     return (
-      <Togglable buttonLabel="show login form">
+      <Togglable buttonLabel="show login form" confirmLabel="login" form="loginForm">
         <LoginForm newLogin={handleLogin} />
       </Togglable>
     )
@@ -94,7 +83,7 @@ const App = () => {
 
   const blogForm = () => {
     return (
-      <Togglable buttonLabel="create new blog" button={createButton()}>
+      <Togglable buttonLabel="create new blog" confirmLabel="create" form="blogForm">
         <BlogForm />
       </Togglable>
     )

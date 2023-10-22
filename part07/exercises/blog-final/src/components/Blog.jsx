@@ -65,12 +65,13 @@ const Blog = ({ blog, removeBlog, addLike }) => {
         </div>
         <div className={flexStyle}>
           <div className="pt-4">
-            <a
-              className="text-violet-900 hover:text-violet-700 font-thin"
-              href={blog.url}
-            >
-              {blog.url}
-            </a>
+            <p className="text-violet-900 hover:text-violet-700 font-thin truncate max-w-sm">
+              <a
+                href={blog.url}
+              >
+                {blog.url}
+              </a>
+            </p>
             <p className="basis-1/2 text-xs">
               added by {blog.user.name}{' '}
               {user ? (
