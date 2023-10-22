@@ -1,24 +1,31 @@
 const jwt = require("jsonwebtoken");
-const _ = require("express-async-errors");
 const blogRouter = require("express").Router();
 const Blog = require("../models/blog");
 const User = require("../models/user");
 const { userExtractor } = require("../utils/middleware");
+const { z, ZodError } = require("zod");
+
+const blogSchema = z.object({
+  title: z.string({ required_error: "blog is missing title" }),
+  author: z.string({ required_error: "blog is missing author" }),
+  url: z.string({ required_error: "blog is missing URL" }).url(),
+  user: z.string(),
+});
 
 blogRouter.get("/", async (req, resp) => {
   const blogs = await Blog.find({})
     .populate("user", { username: 1, name: 1 })
-    .populate("comments.author", { name: 1 })
+    .populate("comments.author", { name: 1 });
 
   resp.json(blogs);
 });
 
 blogRouter.get("/:id", async (req, resp) => {
   const id = req.params.id;
-  const blog = await Blog.findById(id).populate("user", {
-    username: 1,
-    name: 1,
-  });
+
+  const blog = await Blog.findById(id)
+    .populate("user", { username: 1, name: 1 })
+    .populate("comments.author", { name: 1 });
 
   resp.json(blog);
 });
@@ -31,21 +38,38 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
     return;
   }
 
-  const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes,
-    user: req.user.toString(),
-  });
+  if (!body.title || !body.url || !body.author) {
+    resp.status(401).json({ error: "missing fields" });
+    return;
+  }
 
-  const user = await User.findById(req.user);
+  try {
+    const blog = await blogSchema.parseAsync({
+      title: body.title,
+      url: body.url,
+      author: body.author,
+      user: req.user.toString(),
+    });
 
-  const savedBlog = await blog.save();
-  user.blogs = [...user.blogs, savedBlog];
-  await user.save();
+    const newBlog = new Blog(blog);
 
-  resp.status(201).json(savedBlog);
+    const user = await User.findById(req.user);
+
+    const savedBlog = await newBlog.save();
+    user.blogs = [...user.blogs, savedBlog];
+    await user.save();
+
+    resp.status(201).json(savedBlog);
+  } catch (e) {
+    if (e instanceof ZodError) {
+      // only first error matters, if the user fixes it and resubmits
+      // the form he can find out for himself what else is wrong
+      const error = `${e.issues[0].path}: ${e.issues[0].message}`;
+      resp.status(401).json({ error });
+    } else {
+      resp.status(401).json({ error: e.message });
+    }
+  }
 });
 
 blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
@@ -57,9 +81,9 @@ blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
     return;
   }
 
-  const author = req.user ? req.user : null
-  console.log(author)
-  const comment = { body, added: new Date(), author }
+  const author = req.user ? req.user : null;
+  console.log(author);
+  const comment = { body, added: new Date(), author };
 
   const { comments } = await Blog.findByIdAndUpdate(
     id,
@@ -74,7 +98,7 @@ blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
   });
 
   // silly hack to get the latest commment
-  resp.status(201).json(comments[comments.length-1]);
+  resp.status(201).json(comments[comments.length - 1]);
 });
 
 blogRouter.post("/:id/like", async (req, resp, next) => {
@@ -93,10 +117,9 @@ blogRouter.post("/:id/like", async (req, resp, next) => {
     );
 
     resp.status(201).json(updatedBlog);
-  } catch(e) {
+  } catch (e) {
     resp.status(400).json({ error: "unknown blog id" });
   }
-
 });
 
 blogRouter.put("/:id", async (req, resp, next) => {

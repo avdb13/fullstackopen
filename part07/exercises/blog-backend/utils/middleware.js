@@ -22,11 +22,6 @@ const errorHandler = (err, req, resp, next) => {
   } else if (err.name) {
     return resp.status(400).json({ error: err.message });
   }
-  // } else if (err.name === "ValidationError") {
-  //   return resp.status(400).json({ error: err.message });
-  // } else if (err.name === "JsonWebTokenError") {
-  //   return resp.status(400).json({ error: err.message });
-  // }
 
   next(err);
 };
@@ -51,7 +46,6 @@ const userExtractor = async (req, resp, next) => {
     return;
   }
 
-  console.log("here sir")
   const user = await User.findById(decodedToken.id);
   req.user = user._id.toString();
 
