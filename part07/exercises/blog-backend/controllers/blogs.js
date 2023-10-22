@@ -74,31 +74,40 @@ blogRouter.post("/", userExtractor, async (req, resp, next) => {
 
 blogRouter.post("/:id/comments", userExtractor, async (req, resp, next) => {
   const id = req.params.id;
-  const { body, token } = req.body;
+  const body = req.body;
 
-  if (!body) {
-    resp.status(400).json({ error: "malformed body" });
+  if (!body.body) {
+    resp.status(400).json({ error: "missing fields" });
+    return;
+  }
+
+  if (!(body.body instanceof String || typeof body.body === 'string')) {
+    resp.status(400).json({ error: "body must be string" });
     return;
   }
 
   const author = req.user ? req.user : null;
-  console.log(author);
   const comment = { body, added: new Date(), author };
 
-  const { comments } = await Blog.findByIdAndUpdate(
-    id,
-    { $push: { comments: comment } },
-    {
-      runValidators: true,
-      new: true,
-      context: "query",
-    },
-  ).populate("comments.author", {
-    name: 1,
-  });
+  try {
+    const { comments } = await Blog.findByIdAndUpdate(
+      id,
+      { $push: { comments: comment } },
+      {
+        runValidators: true,
+        new: true,
+        context: "query",
+      },
+    ).populate("comments.author", {
+      name: 1,
+    });
 
-  // silly hack to get the latest commment
-  resp.status(201).json(comments[comments.length - 1]);
+    // silly hack to get the latest commment
+    resp.status(201).json(comments[comments.length - 1]);
+  } catch(e) {
+    resp.status(404).json({ error: e.message });
+  }
+
 });
 
 blogRouter.post("/:id/like", async (req, resp, next) => {
@@ -118,7 +127,7 @@ blogRouter.post("/:id/like", async (req, resp, next) => {
 
     resp.status(201).json(updatedBlog);
   } catch (e) {
-    resp.status(400).json({ error: "unknown blog id" });
+    resp.status(400).json({ error: e.message });
   }
 });
 
@@ -146,9 +155,10 @@ blogRouter.delete("/:id", userExtractor, async (req, resp, next) => {
   }
 
   if (blog.user.toString() !== req.user) {
-    return resp
+    resp
       .status(401)
       .json({ error: "you can only delete your own blogs" });
+    return;
   }
 
   resp.status(204).end();

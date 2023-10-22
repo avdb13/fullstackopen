@@ -1,4 +1,5 @@
 const _ = require("express-async-errors");
+const helmet = require("helmet");
 const config = require("./utils/config");
 const logger = require("./utils/logger");
 const loginRouter = require("./controllers/login");
@@ -24,6 +25,7 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
+app.use(helmet());
 app.use(bodyParserErrorHandler());
 
 app.use(middleware.requestLogger());
