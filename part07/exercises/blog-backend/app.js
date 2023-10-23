@@ -24,6 +24,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+app.use(express.static('dist'));
 app.use(bodyParserErrorHandler());
 
 app.use(middleware.requestLogger());
